@@ -1,0 +1,112 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+wheels/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+MANIFEST
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# mypy / pyright
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+
+# Type checking
+pyrightconfig.json
+
+# IDE / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Docker
+docker-compose.override.yml
+
+# Alembic
+# (keep versions/ tracked, ignore generated __pycache__)
+
+# Benchmark artifacts / debug scripts (local only)
+ember_result.txt
+ember_t1_results.txt
+ember_t1_score.json
+ember_tier2_results.json
+ember_tier2_results_after_fix.json
+ember_tier2_stdout.txt
+ember_tier2_stdout_after_fix.txt
+ember_tier3_results.json
+ember_tier3_results_after_fix.json
+ember_tier3_stdout.txt
+ember_tier3_stdout_after_fix.txt
+ember_quick_results.json
+debug_*.py
+test_write.txt
+
+# Session report markdown files (generated during dev sessions)
+BENCHMARK_COMPLETION_GUIDE.md
+BENCHMARK_SESSION_SUMMARY.md
+EMBER_BENCHMARK_STATUS_REPORT.md
+EMBER_COMPLETE_RESULTS.md
+EMBER_TIER1_FINAL_REPORT.md
+FINAL_STATUS_REPORT.md
+README_EMBER_RESULTS.md
+TASK_COMPLETION_SUMMARY.md
+TIMEOUT_FIX_COMPLETION_REPORT.md
+
+# One-off benchmark runner / debug scripts
+run_ember_tier1.py
+run_ember_tier1_debug.py
+trace_tier1.py
+generate_ember_results.py
+monitor_benchmark.py
+poll_benchmark.py
+quick_tier1_2conv.py
+wait_and_report.py
+wait_for_benchmark.py
+verify_timeout_fix.py
+
+# Temporary / misc
+*.log
+*.tmp
+/tmp/
+.benchmarks/
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
