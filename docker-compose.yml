@@ -16,6 +16,20 @@ services:
       timeout: 5s
       retries: 10
 
+  migrate:
+    build:
+      context: .
+      target: server
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://eidolon_agent_memory:eidolon_agent_memory@postgres:5432/eidolon_agent_memory
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   server:
     build:
       context: .
@@ -29,8 +43,8 @@ services:
       MCP_TRANSPORT: http
       MCP_PORT: "3100"
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   worker:
@@ -42,8 +56,8 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://eidolon_agent_memory:eidolon_agent_memory@postgres:5432/eidolon_agent_memory
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
 volumes:
