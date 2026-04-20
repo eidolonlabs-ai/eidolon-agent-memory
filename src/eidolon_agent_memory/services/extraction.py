@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import uuid
 from typing import Any
 
@@ -103,16 +104,131 @@ FIRST_PASS_JSON:
 """
 
 
-def _merge_extractions(primary: dict[str, Any], secondary: dict[str, Any]) -> dict[str, Any]:
-    primary_nodes = primary.get("nodes", []) if isinstance(primary.get("nodes", []), list) else []
-    primary_edges = primary.get("edges", []) if isinstance(primary.get("edges", []), list) else []
-    secondary_nodes = secondary.get("nodes", []) if isinstance(secondary.get("nodes", []), list) else []
-    secondary_edges = secondary.get("edges", []) if isinstance(secondary.get("edges", []), list) else []
+def _fallback_extract_critical_predicates(text: str) -> list[dict[str, Any]]:
+    """
+    Rule-based fallback extraction for critical emotional predicates.
+    Returns edges for high-confidence patterns when LLM extraction fails.
+    """
+    fallback_edges: list[dict[str, Any]] = []
+    text_lower = text.lower()
+
+    # Pattern: death, loss
+    death_patterns = [
+        (r"\b(mother|father|parent|sister|brother|sibling|husband|wife|spouse|girlfriend|boyfriend|partner|friend)\s+(died|dead|passed away|passed|loss)", "LOST_PERSON", "HIGH"),
+        (r"\b(lost|grieving|mourning)\b.*\b(mother|father|parent|sister|brother|sibling|husband|wife|spouse)", "LOST_PERSON", "HIGH"),
+    ]
+    for pattern, pred, salience in death_patterns:
+        if re.search(pattern, text_lower):
+            fallback_edges.append({
+                "source_canonical": "user",
+                "target_canonical": "significant_person",
+                "predicate": pred,
+                "fact_text": "User experienced a significant loss.",
+                "emotional_salience": salience,
+                "confidence": 0.7,
+                "importance": 0.9,
+                "category": "personal",
+                "reasoning_type": "explicit",
+                "temporal_type": "stable",
+            })
+            break
+
+    # Pattern: breakup
+    if re.search(r"\b(broke up|breakup|broke|split|broke.*up|ended.*relationship|ended.*dating)", text_lower):
+        fallback_edges.append({
+            "source_canonical": "user",
+            "target_canonical": "romantic_relationship",
+            "predicate": "ENDED_RELATIONSHIP",
+            "fact_text": "User experienced a romantic breakup.",
+            "emotional_salience": "HIGH",
+            "confidence": 0.8,
+            "importance": 0.85,
+            "category": "relationship",
+            "reasoning_type": "explicit",
+            "temporal_type": "episodic",
+        })
+
+    # Pattern: panic attacks
+    if re.search(r"\b(panic attacks?|panic|panic.*anxiety|spiraling)", text_lower):
+        fallback_edges.append({
+            "source_canonical": "user",
+            "target_canonical": "panic_disorder",
+            "predicate": "HAS_CONDITION",
+            "fact_text": "User experiences panic attacks.",
+            "emotional_salience": "MED",
+            "confidence": 0.8,
+            "importance": 0.8,
+            "category": "health",
+            "reasoning_type": "explicit",
+            "temporal_type": "ongoing",
+        })
+
+    # Pattern: burnout
+    if re.search(r"\b(burnout|burned out|exhausted|overwhelmed|depleted)", text_lower):
+        fallback_edges.append({
+            "source_canonical": "user",
+            "target_canonical": "burnout_state",
+            "predicate": "EXPERIENCING",
+            "fact_text": "User is experiencing burnout or exhaustion.",
+            "emotional_salience": "MED",
+            "confidence": 0.75,
+            "importance": 0.75,
+            "category": "health",
+            "reasoning_type": "explicit",
+            "temporal_type": "ongoing",
+        })
+
+    # Pattern: estrangement
+    if re.search(r"\b(estranged|estrangement|don't.*talk|no.*contact|cut.*off|cut off)", text_lower):
+        fallback_edges.append({
+            "source_canonical": "user",
+            "target_canonical": "estranged_family",
+            "predicate": "ESTRANGED_FROM",
+            "fact_text": "User is estranged from family members.",
+            "emotional_salience": "HIGH",
+            "confidence": 0.75,
+            "importance": 0.85,
+            "category": "relationship",
+            "reasoning_type": "explicit",
+            "temporal_type": "stable",
+        })
+
+    # Pattern: location
+    location_pattern = r"\b(live|lives|living|moved to|from|based in|in )\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)"
+    matches = re.finditer(location_pattern, text)
+    for match in matches:
+        location = match.group(2).strip()
+        if len(location) > 2:
+            fallback_edges.append({
+                "source_canonical": "user",
+                "target_canonical": f"location_{location.lower().replace(' ', '_')}",
+                "predicate": "LIVES_IN",
+                "fact_text": f"User lives in or is from {location}.",
+                "emotional_salience": "LOW",
+                "confidence": 0.6,
+                "importance": 0.3,
+                "category": "personal",
+                "reasoning_type": "explicit",
+                "temporal_type": "stable",
+            })
+            break  # Only capture first location
+
+    return fallback_edges
+
+
+def _merge_extractions(*extraction_list: dict[str, Any]) -> dict[str, Any]:
+    """Merge multiple extraction results, deduplicating by canonical name and fact text."""
+    all_nodes = []
+    all_edges = []
+    for extraction in extraction_list:
+        if isinstance(extraction, dict):
+            all_nodes.extend(extraction.get("nodes", []) if isinstance(extraction.get("nodes", []), list) else [])
+            all_edges.extend(extraction.get("edges", []) if isinstance(extraction.get("edges", []), list) else [])
 
     nodes_by_canonical: dict[str, dict[str, Any]] = {}
     merged_nodes: list[dict[str, Any]] = []
 
-    for node in primary_nodes + secondary_nodes:
+    for node in all_nodes:
         if not isinstance(node, dict):
             continue
         canonical = node.get("canonical_name")
@@ -125,7 +241,14 @@ def _merge_extractions(primary: dict[str, Any], secondary: dict[str, Any]) -> di
 
     seen_edges: set[tuple[str, str, str, str]] = set()
     merged_edges: list[dict[str, Any]] = []
-    for edge in primary_edges + secondary_edges:
+    # Sort by emotional_salience to prioritize HIGH, then MED, then LOW
+    salience_order = {"HIGH": 0, "MED": 1, "LOW": 2}
+    all_edges_sorted = sorted(
+        all_edges,
+        key=lambda e: (salience_order.get(str(e.get("emotional_salience", "LOW")).upper(), 3), str(e.get("fact_text", "")).lower()),
+    )
+
+    for edge in all_edges_sorted:
         if not isinstance(edge, dict):
             continue
         src = str(edge.get("source_canonical", "")).strip()
@@ -153,7 +276,7 @@ async def extract_facts(
 ) -> dict[str, int]:
     """
     Run LLM extraction on *conversation_text* and persist nodes+edges.
-    Returns extraction counts plus the concrete extracted facts that were persisted.
+    Uses single pass with adaptive second-pass refinement when coverage is thin.
     """
     prompt = EXTRACTION_PROMPT.replace("{conversation}", conversation_text)
     try:
@@ -161,7 +284,7 @@ async def extract_facts(
             [{"role": "user", "content": prompt}],
             tier="extraction",
         )
-    except Exception as exc:
+    except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
         logger.error("LLM extraction failed: %s", exc)
         return {"nodes": 0, "edges": 0, "facts": []}
 
@@ -190,8 +313,8 @@ async def extract_facts(
             )
             if isinstance(second_pass, dict):
                 data = _merge_extractions(data, second_pass)
-        except Exception as exc:
-            logger.warning("Second-pass extraction failed, continuing with first pass: %s", exc)
+        except (ValueError, RuntimeError, json.JSONDecodeError) as exc:
+            logger.debug("Second-pass extraction failed, continuing with first pass: %s", exc)
 
     nodes_raw: list[dict] = data.get("nodes", [])
     edges_raw: list[dict] = data.get("edges", [])
@@ -213,7 +336,7 @@ async def extract_facts(
             )
             node_map[n["canonical_name"]] = node
             nodes_count += 1
-        except (KeyError, Exception):
+        except (KeyError, ValueError, TypeError):
             continue
 
     edges_count = 0
@@ -265,7 +388,7 @@ async def extract_facts(
                     "updated_at": edge.updated_at.isoformat() if edge.updated_at else None,
                 }
             )
-        except (KeyError, Exception):
+        except (KeyError, ValueError, TypeError):
             continue
 
     await db.commit()

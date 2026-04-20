@@ -1,0 +1,34 @@
+{
+  "benchmark": "LOCOMO",
+  "timestamp": "20260420T045713Z",
+  "repo_dir": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo",
+  "repo_status": "repo already present",
+  "run_command": "\"/Users/markcastillo/git/eidolon-agent-memory/.venv/bin/python\" \"/Users/markcastillo/git/eidolon-agent-memory/scripts/evals/mcp_memory_eval.py\" locomo --repo-dir \"/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo\" --data-file data/locomo10.json --out-file \"outputs/locomo10_qa.json\" --summary-file \"/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260420T045713Z.json\" --stats-file \"outputs/locomo10_qa_stats.json\" --mcp-url \"http://localhost:3100/mcp\" --answer-model \"openai/gpt-4.1-mini\" --model-name \"mcp-memory\" --limit 5 ",
+  "returncode": 0,
+  "stdout": "5 QA samples evaluated; 5 accuracy values\nTotal number of questions and corresponding accuracy in each category: \nNo questions found in category 4\n1 2 0.667 0.334\n2 2 0.667 0.334\n3 1 0.25 0.25\nNo questions found in category 5\nOverall accuracy:  0.317\n",
+  "stderr": "\n0it [00:00, ?it/s]\n5it [00:00, 40563.87it/s]\n",
+  "setup": [
+    {
+      "command": "mkdir -p datasets && curl -fsSL https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json -o datasets/locomo10.json",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "mkdir -p data && cp datasets/locomo10.json data/locomo10.json",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "mkdir -p outputs",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "artifact_path": "/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260420T045713Z.json",
+  "status": "PASS",
+  "score_summary": "see artifact",
+  "notes": "command completed"
+}

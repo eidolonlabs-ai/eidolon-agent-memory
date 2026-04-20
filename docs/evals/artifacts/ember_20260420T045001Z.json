@@ -1,0 +1,1219 @@
+{
+  "adapter": "eidolon-agent-memory",
+  "tiers_run": [
+    1,
+    2,
+    3
+  ],
+  "elapsed_seconds": 241.87,
+  "results": [
+    {
+      "tier": "Tier 1: Extraction Quality",
+      "passed": false,
+      "score": 0.6428571428571429,
+      "details": {
+        "flat_recall": 0.6551724137931034,
+        "weighted_recall": 0.6428571428571429,
+        "threshold": 0.8,
+        "conversations": 12,
+        "total_gold_facts": 58,
+        "total_matched": 38,
+        "salience_breakdown": {
+          "HIGH": {
+            "found": 18,
+            "total": 29
+          },
+          "MED": {
+            "found": 16,
+            "total": 24
+          },
+          "LOW": {
+            "found": 4,
+            "total": 5
+          }
+        }
+      },
+      "per_item": [
+        {
+          "conversation_id": "conv_loneliness",
+          "flat_recall": 0.8,
+          "weighted_recall": 0.7,
+          "matched": 4,
+          "total": 5,
+          "missing": [
+            "User feels socially isolated in Seattle and lacks close friendships"
+          ]
+        },
+        {
+          "conversation_id": "conv_pet_anchor",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.5555555555555556,
+          "matched": 2,
+          "total": 4,
+          "missing": [
+            "Max is 3 years old",
+            "User got Max after their mother's death as a way to cope with grief"
+          ]
+        },
+        {
+          "conversation_id": "conv_emotional",
+          "flat_recall": 0.6666666666666666,
+          "weighted_recall": 0.625,
+          "matched": 2,
+          "total": 3,
+          "missing": [
+            "User and mother cooked together on Sundays"
+          ]
+        },
+        {
+          "conversation_id": "conv_burnout",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.3333333333333333,
+          "matched": 2,
+          "total": 4,
+          "missing": [
+            "User feels disconnected from their own interests and sense of identity",
+            "User is experiencing burnout"
+          ]
+        },
+        {
+          "conversation_id": "conv_breakup",
+          "flat_recall": 0.25,
+          "weighted_recall": 0.3,
+          "matched": 1,
+          "total": 4,
+          "missing": [
+            "User feels a mix of relief and grief about the breakup",
+            "User and Maya lived together",
+            "User misses having a partner and feels lonely since the breakup"
+          ]
+        },
+        {
+          "conversation_id": "conv_anxiety",
+          "flat_recall": 1.0,
+          "weighted_recall": 1.0,
+          "matched": 4,
+          "total": 4,
+          "missing": []
+        },
+        {
+          "conversation_id": "conv_companion_values",
+          "flat_recall": 1.0,
+          "weighted_recall": 1.0,
+          "matched": 4,
+          "total": 4,
+          "missing": []
+        },
+        {
+          "conversation_id": "conv_family_estrangement",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.5625,
+          "matched": 3,
+          "total": 6,
+          "missing": [
+            "User describes the loss of their mother's relationship as a form of grief",
+            "User's father still keeps in minimal contact via text",
+            "User hopes their mother will eventually accept them"
+          ]
+        },
+        {
+          "conversation_id": "conv_career_layoff",
+          "flat_recall": 0.6666666666666666,
+          "weighted_recall": 0.6666666666666666,
+          "matched": 4,
+          "total": 6,
+          "missing": [
+            "User has approximately 3 months of savings after layoff",
+            "User's wife has been discussing having a second child"
+          ]
+        },
+        {
+          "conversation_id": "conv_spiritual_crisis",
+          "flat_recall": 0.8333333333333334,
+          "weighted_recall": 0.8,
+          "matched": 5,
+          "total": 6,
+          "missing": [
+            "User is uncertain about their beliefs and in a state of spiritual questioning"
+          ]
+        },
+        {
+          "conversation_id": "conv_learning_struggle",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.5294117647058824,
+          "matched": 3,
+          "total": 6,
+          "missing": [
+            "User struggled significantly in school before their ADHD diagnosis",
+            "User's parents did not believe ADHD was a real condition",
+            "User feels anger about receiving their diagnosis so late in life"
+          ]
+        },
+        {
+          "conversation_id": "conv_toxic_friendship",
+          "flat_recall": 0.6666666666666666,
+          "weighted_recall": 0.7142857142857143,
+          "matched": 4,
+          "total": 6,
+          "missing": [
+            "User has tried to address the issue with Cassie multiple times without change",
+            "Cassie expects frequent attendance at social events and reacts with guilt-tripping when declined"
+          ]
+        }
+      ]
+    },
+    {
+      "tier": "Tier 2: Retrieval Quality",
+      "passed": true,
+      "score": 0.85625,
+      "details": {
+        "mean_recall_at_k": 0.85625,
+        "mean_mrr": 0.8083333333333333,
+        "omission_rate": 0.8571428571428571,
+        "total_queries": 40,
+        "thresholds": {
+          "recall_at_3": 0.75,
+          "salience_weighted_mrr": 0.65,
+          "omission_rate": 0.8
+        },
+        "recall_pass": true,
+        "omission_pass": true,
+        "k": 3
+      },
+      "per_item": [
+        {
+          "query_id": "q_loneliness_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "isolated",
+            "no friends"
+          ],
+          "missing_keywords": [
+            "weekends without talking"
+          ]
+        },
+        {
+          "query_id": "q_support_network",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Seattle",
+            "no friends",
+            "Austin"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_pet_direct",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "golden retriever",
+            "Max"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_pet_emotional_role",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "Max",
+            "dog",
+            "comfort"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_grief_direct",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "mother passed away",
+            "grief"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_relationship_status",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Maya",
+            "ended",
+            "breakup"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_mental_health_direct",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "panic attacks",
+            "Dr. Reyes",
+            "therapy"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_burnout_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "burnout",
+            "identity"
+          ],
+          "missing_keywords": [
+            "can't remember what they care about"
+          ]
+        },
+        {
+          "query_id": "q_creative_past",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "paint",
+            "painting"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_difficult_times",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "panic attacks"
+          ],
+          "missing_keywords": [
+            "breakup",
+            "mother passed away"
+          ]
+        },
+        {
+          "query_id": "q_synonym_lonely",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "isolated",
+            "no friends",
+            "Seattle"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_synonym_grief",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "mother passed away"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_synonym_therapy",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Dr. Reyes",
+            "therapist"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_synonym_coping",
+          "test_type": "synonym",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "Max",
+            "dog"
+          ],
+          "missing_keywords": [
+            "therapy"
+          ]
+        },
+        {
+          "query_id": "q_synonym_relationship",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Maya",
+            "breakup",
+            "lonely"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_companion_values",
+          "test_type": "two_way_memory",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "depth",
+            "honesty",
+            "small talk"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_companion_approach",
+          "test_type": "two_way_memory",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "depth",
+            "honesty",
+            "seen"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_casual_fun",
+          "test_type": "graceful_omission",
+          "recall_at_k": 0.5,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "dog"
+          ],
+          "missing_keywords": [
+            "painting"
+          ],
+          "omission_pass": true,
+          "leaked_keywords": []
+        },
+        {
+          "query_id": "q_casual_weekend",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "dog",
+            "Max"
+          ],
+          "missing_keywords": [],
+          "omission_pass": false,
+          "leaked_keywords": [
+            "without talking"
+          ]
+        },
+        {
+          "query_id": "q_casual_happy",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Max",
+            "dog"
+          ],
+          "missing_keywords": [],
+          "omission_pass": true,
+          "leaked_keywords": []
+        },
+        {
+          "query_id": "q_casual_creative",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "painting",
+            "paint"
+          ],
+          "missing_keywords": [],
+          "omission_pass": true,
+          "leaked_keywords": []
+        },
+        {
+          "query_id": "q_avoid_topics",
+          "test_type": "graceful_omission",
+          "recall_at_k": 0.25,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "panic attack"
+          ],
+          "missing_keywords": [
+            "mother passed away",
+            "breakup",
+            "isolated"
+          ],
+          "omission_pass": true,
+          "leaked_keywords": []
+        },
+        {
+          "query_id": "q_why_dog",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "mother"
+          ],
+          "missing_keywords": [
+            "grief",
+            "cope"
+          ]
+        },
+        {
+          "query_id": "q_work_sentiment",
+          "test_type": "direct",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "burnout",
+            "disconnected"
+          ],
+          "missing_keywords": [
+            "6 years"
+          ]
+        },
+        {
+          "query_id": "q_desires_connection",
+          "test_type": "direct",
+          "recall_at_k": 0.75,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "isolated",
+            "breakup",
+            "lonely"
+          ],
+          "missing_keywords": [
+            "misses having someone"
+          ]
+        },
+        {
+          "query_id": "q_family_estrangement",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "estranged",
+            "mother",
+            "gay"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_identity_sexuality",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "gay",
+            "estranged"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_career_loss",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "laid off",
+            "savings",
+            "8 years"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_financial_anxiety",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "savings",
+            "laid off"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_spiritual_state",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Catholic",
+            "faith",
+            "church"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_spiritual_crisis",
+          "test_type": "direct",
+          "recall_at_k": 0.75,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "sister",
+            "faith",
+            "Catholic"
+          ],
+          "missing_keywords": [
+            "grief"
+          ]
+        },
+        {
+          "query_id": "q_sibling_loss",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "sister"
+          ],
+          "missing_keywords": [
+            "cancer",
+            "29"
+          ]
+        },
+        {
+          "query_id": "q_adhd_diagnosis",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "ADHD",
+            "diagnosed",
+            "34"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_self_narrative",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "lazy",
+            "ADHD",
+            "not smart enough"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_difficult_friendship",
+          "test_type": "direct",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Cassie",
+            "guilt"
+          ],
+          "missing_keywords": [
+            "12 years"
+          ]
+        },
+        {
+          "query_id": "q_synonym_family_acceptance",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "estranged",
+            "mother",
+            "gay"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_synonym_rebuild_identity",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "ADHD",
+            "lazy",
+            "not smart enough",
+            "identity"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_synonym_job_stress",
+          "test_type": "synonym",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "laid off",
+            "8 years"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_omission_job_loss",
+          "test_type": "graceful_omission",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "dog",
+            "Max"
+          ],
+          "missing_keywords": [
+            "painting"
+          ],
+          "omission_pass": true,
+          "leaked_keywords": []
+        },
+        {
+          "query_id": "q_omission_grief_multiple",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "dog",
+            "Max",
+            "painting"
+          ],
+          "missing_keywords": [],
+          "omission_pass": true,
+          "leaked_keywords": []
+        }
+      ]
+    },
+    {
+      "tier": "Tier 2b: Recency Bias",
+      "passed": true,
+      "score": 1.0,
+      "details": {
+        "ranks": {
+          "recent": 0,
+          "medium": 1,
+          "old": 2
+        },
+        "threshold": 0.7,
+        "message": "Recency score measures whether recent facts (1d old) rank higher than older facts (7d, 30d old) for a broad query. Score = 1.0 if recent < medium < old; 0.5 if recent ranks before any older facts."
+      },
+      "per_item": [
+        {
+          "fact": "User used to work in finance",
+          "age_days": 30,
+          "rank": 2
+        },
+        {
+          "fact": "User is now working in tech",
+          "age_days": 7,
+          "rank": 1
+        },
+        {
+          "fact": "User just started learning AI",
+          "age_days": 1,
+          "rank": 0
+        }
+      ]
+    },
+    {
+      "tier": "Tier 3: End-to-End Roundtrip",
+      "passed": false,
+      "score": 0.32708333333333334,
+      "details": {
+        "mean_recall_at_k": 0.32708333333333334,
+        "mean_mrr": 0.4041666666666667,
+        "omission_rate": 1.0,
+        "total_queries": 40,
+        "threshold": 0.6,
+        "conversations_ingested": 12,
+        "k": 3
+      },
+      "per_item": [
+        {
+          "query_id": "q_loneliness_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "weekends without talking"
+          ],
+          "missing_keywords": [
+            "isolated",
+            "no friends"
+          ]
+        },
+        {
+          "query_id": "q_support_network",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "Seattle"
+          ],
+          "missing_keywords": [
+            "no friends",
+            "Austin"
+          ]
+        },
+        {
+          "query_id": "q_pet_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "golden retriever",
+            "Max"
+          ]
+        },
+        {
+          "query_id": "q_pet_emotional_role",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "Max",
+            "dog",
+            "comfort"
+          ]
+        },
+        {
+          "query_id": "q_grief_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "mother passed away",
+            "grief"
+          ]
+        },
+        {
+          "query_id": "q_relationship_status",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "Maya",
+            "ended",
+            "breakup"
+          ]
+        },
+        {
+          "query_id": "q_mental_health_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "panic attacks"
+          ],
+          "missing_keywords": [
+            "Dr. Reyes",
+            "therapy"
+          ]
+        },
+        {
+          "query_id": "q_burnout_direct",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "identity"
+          ],
+          "missing_keywords": [
+            "burnout",
+            "can't remember what they care about"
+          ]
+        },
+        {
+          "query_id": "q_creative_past",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "paint",
+            "painting"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_difficult_times",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "panic attacks",
+            "breakup",
+            "mother passed away"
+          ]
+        },
+        {
+          "query_id": "q_synonym_lonely",
+          "test_type": "synonym",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "isolated",
+            "no friends",
+            "Seattle"
+          ]
+        },
+        {
+          "query_id": "q_synonym_grief",
+          "test_type": "synonym",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "mother passed away"
+          ]
+        },
+        {
+          "query_id": "q_synonym_therapy",
+          "test_type": "synonym",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "Dr. Reyes",
+            "therapist"
+          ]
+        },
+        {
+          "query_id": "q_synonym_coping",
+          "test_type": "synonym",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "Max",
+            "dog",
+            "therapy"
+          ]
+        },
+        {
+          "query_id": "q_synonym_relationship",
+          "test_type": "synonym",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "Maya",
+            "breakup",
+            "lonely"
+          ]
+        },
+        {
+          "query_id": "q_companion_values",
+          "test_type": "two_way_memory",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "depth",
+            "honesty",
+            "small talk"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_companion_approach",
+          "test_type": "two_way_memory",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "depth",
+            "honesty",
+            "seen"
+          ]
+        },
+        {
+          "query_id": "q_casual_fun",
+          "test_type": "graceful_omission",
+          "recall_at_k": 0.5,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "dog"
+          ],
+          "missing_keywords": [
+            "painting"
+          ]
+        },
+        {
+          "query_id": "q_casual_weekend",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "dog",
+            "Max"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_casual_happy",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "Max",
+            "dog"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_casual_creative",
+          "test_type": "graceful_omission",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "painting",
+            "paint"
+          ]
+        },
+        {
+          "query_id": "q_avoid_topics",
+          "test_type": "graceful_omission",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "mother passed away",
+            "panic attack",
+            "breakup",
+            "isolated"
+          ]
+        },
+        {
+          "query_id": "q_why_dog",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "mother",
+            "grief",
+            "cope"
+          ]
+        },
+        {
+          "query_id": "q_work_sentiment",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "burnout",
+            "disconnected",
+            "6 years"
+          ]
+        },
+        {
+          "query_id": "q_desires_connection",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "isolated",
+            "misses having someone",
+            "breakup",
+            "lonely"
+          ]
+        },
+        {
+          "query_id": "q_family_estrangement",
+          "test_type": "direct",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "mother",
+            "gay"
+          ],
+          "missing_keywords": [
+            "estranged"
+          ]
+        },
+        {
+          "query_id": "q_identity_sexuality",
+          "test_type": "direct",
+          "recall_at_k": 0.5,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "gay"
+          ],
+          "missing_keywords": [
+            "estranged"
+          ]
+        },
+        {
+          "query_id": "q_career_loss",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "laid off",
+            "savings",
+            "8 years"
+          ]
+        },
+        {
+          "query_id": "q_financial_anxiety",
+          "test_type": "direct",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "savings",
+            "laid off"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_spiritual_state",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "faith"
+          ],
+          "missing_keywords": [
+            "Catholic",
+            "church"
+          ]
+        },
+        {
+          "query_id": "q_spiritual_crisis",
+          "test_type": "direct",
+          "recall_at_k": 0.5,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "sister",
+            "faith"
+          ],
+          "missing_keywords": [
+            "Catholic",
+            "grief"
+          ]
+        },
+        {
+          "query_id": "q_sibling_loss",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 0.3333333333333333,
+          "found_keywords": [
+            "sister"
+          ],
+          "missing_keywords": [
+            "cancer",
+            "29"
+          ]
+        },
+        {
+          "query_id": "q_adhd_diagnosis",
+          "test_type": "direct",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "ADHD",
+            "diagnosed",
+            "34"
+          ]
+        },
+        {
+          "query_id": "q_self_narrative",
+          "test_type": "direct",
+          "recall_at_k": 0.3333333333333333,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "ADHD"
+          ],
+          "missing_keywords": [
+            "lazy",
+            "not smart enough"
+          ]
+        },
+        {
+          "query_id": "q_difficult_friendship",
+          "test_type": "direct",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "Cassie",
+            "guilt"
+          ],
+          "missing_keywords": [
+            "12 years"
+          ]
+        },
+        {
+          "query_id": "q_synonym_family_acceptance",
+          "test_type": "synonym",
+          "recall_at_k": 0.6666666666666666,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "mother",
+            "gay"
+          ],
+          "missing_keywords": [
+            "estranged"
+          ]
+        },
+        {
+          "query_id": "q_synonym_rebuild_identity",
+          "test_type": "synonym",
+          "recall_at_k": 0.25,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "ADHD"
+          ],
+          "missing_keywords": [
+            "lazy",
+            "not smart enough",
+            "identity"
+          ]
+        },
+        {
+          "query_id": "q_synonym_job_stress",
+          "test_type": "synonym",
+          "recall_at_k": 0.0,
+          "reciprocal_rank": 0.0,
+          "found_keywords": [],
+          "missing_keywords": [
+            "laid off",
+            "8 years"
+          ]
+        },
+        {
+          "query_id": "q_omission_job_loss",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 1.0,
+          "found_keywords": [
+            "dog",
+            "painting",
+            "Max"
+          ],
+          "missing_keywords": []
+        },
+        {
+          "query_id": "q_omission_grief_multiple",
+          "test_type": "graceful_omission",
+          "recall_at_k": 1.0,
+          "reciprocal_rank": 0.5,
+          "found_keywords": [
+            "dog",
+            "Max",
+            "painting"
+          ],
+          "missing_keywords": []
+        }
+      ]
+    }
+  ]
+}

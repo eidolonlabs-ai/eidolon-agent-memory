@@ -31,6 +31,18 @@
 | 2026-04-19 | LOCOMO | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260419T160021Z.json | command completed |
 | 2026-04-19 | LongMemEval | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_20260419T160545Z.json | command completed |
 | 2026-04-19 | EMBER (full) | Priority | Tier 1: Extraction Quality=0.607 FAIL; Tier 2: Retrieval Quality=0.856 PASS; Tier 2b: Recency Bias=1.000 PASS; Tier 3: End-to-End Roundtrip=0.406 FAIL | PARTIAL | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/ember_20260419T161046Z.json | Full EMBER run completed |
+| 2026-04-20 | LOCOMO | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260420T043830Z.json | command completed |
+| 2026-04-20 | LongMemEval | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_20260420T043839Z.json | command completed |
+| 2026-04-20 | EMBER (full) | Priority | Tier 1: Extraction Quality=0.379 FAIL; Tier 2: Retrieval Quality=0.856 PASS; Tier 2b: Recency Bias=1.000 PASS; Tier 3: End-to-End Roundtrip=0.438 FAIL | PARTIAL | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/ember_20260420T043941Z.json | Full EMBER run completed |
+| 2026-04-20 | LOCOMO | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260420T044824Z.json | command completed |
+| 2026-04-20 | LongMemEval | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_20260420T044832Z.json | command completed |
+| 2026-04-20 | EMBER (full) | Priority | Tier 1: Extraction Quality=0.643 FAIL; Tier 2: Retrieval Quality=0.856 PASS; Tier 2b: Recency Bias=1.000 PASS; Tier 3: End-to-End Roundtrip=0.327 FAIL | PARTIAL | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/ember_20260420T045001Z.json | Full EMBER run completed |
+| 2026-04-20 | LOCOMO | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260420T045713Z.json | command completed |
+| 2026-04-20 | LongMemEval | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_20260420T045720Z.json | command completed |
+| 2026-04-20 | EMBER (full) | Priority | Tier 1: Extraction Quality=0.493 FAIL; Tier 2: Retrieval Quality=0.856 PASS; Tier 2b: Recency Bias=1.000 PASS; Tier 3: End-to-End Roundtrip=0.354 FAIL | PARTIAL | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/ember_20260420T045824Z.json | Full EMBER run completed |
+| 2026-04-20 | LOCOMO | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260420T050348Z.json | command completed |
+| 2026-04-20 | LongMemEval | Baseline | see artifact | PASS | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_20260420T050357Z.json | command completed |
+| 2026-04-20 | EMBER (full) | Priority | Tier 1: Extraction Quality=0.643 FAIL; Tier 2: Retrieval Quality=0.856 PASS; Tier 2b: Recency Bias=1.000 PASS; Tier 3: End-to-End Roundtrip=0.452 FAIL | PARTIAL | /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/ember_20260420T050504Z.json | Full EMBER run completed |
 
 ## Action Queue
 1. Execute `python scripts/evals/run_locomo.py` with configured LOCOMO run command.
