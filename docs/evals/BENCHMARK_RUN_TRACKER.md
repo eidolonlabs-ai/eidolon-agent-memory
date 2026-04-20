@@ -1,5 +1,22 @@
 # Benchmark Run Tracker
 
+## Current Status (Latest: 2026-04-20T05:05:04Z)
+
+| Benchmark | Score | Status | Notes |
+|-----------|-------|--------|-------|
+| **EMBER Tier 1** (Extraction) | 0.6429 | ✗ FAIL | HIGH: 18/29 (62%), MED: 16/24 (67%), LOW: 4/5 (80%) |
+| **EMBER Tier 2** (Retrieval) | 0.8562 | ✓ PASS | Strong semantic search and ranking |
+| **EMBER Tier 2b** (Graceful Omission) | 1.0000 | ✓ PASS | Never surfaces sensitive content inappropriately |
+| **EMBER Tier 3** (Roundtrip) | 0.4521 | ✗ FAIL | Limited by Tier 1 extraction losses |
+| **LOCOMO** (F1) | 0.3168 | — | 5 QA pairs evaluated |
+| **LongMemEval** (Accuracy) | 0.4800 | — | 12/25 correct |
+
+**Improvement Focus**: Extraction quality is the primary bottleneck (0.643 vs 0.80 target). Retrieval and graceful omission are performing well.
+
+For detailed analysis, see [BENCHMARK_SCORE_SUMMARY.md](BENCHMARK_SCORE_SUMMARY.md).
+
+---
+
 ## Runs
 
 | Date (UTC) | Benchmark | Scope | Score Summary | Status | Artifact | Notes |
