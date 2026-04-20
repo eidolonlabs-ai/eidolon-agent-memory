@@ -73,11 +73,14 @@ async def search_memory(
     intent: str = "factual",
     limit: int = 10,
 ) -> str:
-    """Search memory facts using hybrid semantic retrieval.
+    """Search structured memory facts with hybrid semantic retrieval.
 
-    intent: factual | emotional | casual | recall
+    Auth: requires api_key.
+    Inputs: companion_id, query, intent (factual|emotional|casual|recall), limit.
+    Returns: JSON {"facts": [{"id": uuid, "fact_text": str, "predicate": str, "emotional_salience": HIGH|MED|LOW, "importance": float, "confidence": float, "scope": user|shared|companion, "score": float}], "count": int}
+    Side effects: none.
     Use for: recalling facts to include in a response.
-    Do NOT use: for open-ended listing or casual greetings.
+    Do not use: open-ended listing or casual greetings.
     """
     from eidolon_agent_memory.tools.memory_read import tool_search_memory
     user = await _resolve_user(api_key)
@@ -100,10 +103,14 @@ async def get_context(
     query: str,
     intent: str = "factual",
 ) -> str:
-    """Build a structured context block (facts + emotional + episodic) for prompt injection.
+    """Build a structured context block from facts and episodic memory.
 
+    Auth: requires api_key.
+    Inputs: companion_id, query, intent.
+    Returns: JSON {"context": str (formatted text), "fact_count": int}
+    Side effects: none.
     Use for: preparing context before generating a response.
-    Do NOT use: for single-fact lookup; use search_memory instead.
+    Do not use: single-fact lookup; use lookup_fact or search_memory.
     """
     from eidolon_agent_memory.tools.memory_read import tool_get_context
     user = await _resolve_user(api_key)
@@ -125,10 +132,14 @@ async def lookup_fact(
     subject: str,
     predicate: str = "",
 ) -> str:
-    """Look up a specific fact by subject and optional predicate.
+    """Look up facts by subject and optional predicate.
 
-    Use for: direct questions ('what is the user's job?').
-    Do NOT use: for open-ended semantic search.
+    Auth: requires api_key.
+    Inputs: companion_id, subject, optional predicate.
+    Returns: JSON {"facts": [{"id": uuid, "fact_text": str, "predicate": str, "importance": float, "confidence": float, "emotional_salience": HIGH|MED|LOW}]}
+    Side effects: none.
+    Use for: direct fact questions.
+    Do not use: broad semantic exploration.
     """
     from eidolon_agent_memory.tools.memory_read import tool_lookup_fact
     user = await _resolve_user(api_key)
@@ -145,8 +156,12 @@ async def lookup_fact(
 
 @mcp.tool()
 async def get_relationship(api_key: str, companion_id: str) -> str:
-    """Get relationship state: trust score, closeness, milestones.
+    """Get relationship state for the current user and companion.
 
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"trust": float, "closeness": float, "interactions": int, "absence_streak_days": int, "milestones": [str]}
+    Side effects: none.
     Use for: calibrating tone and intimacy in responses.
     """
     from eidolon_agent_memory.tools.memory_read import tool_get_relationship
@@ -166,10 +181,13 @@ async def get_episodic(
     memory_types: str = "",
     limit: int = 5,
 ) -> str:
-    """Search episodic memories (conversations, dreams, diaries, musings).
+    """Search episodic memories using semantic retrieval.
 
-    memory_types: comma-separated e.g. 'conversation,diary' or empty for all.
-    Use for: recalling past events or checking if topic was discussed.
+    Auth: requires api_key.
+    Inputs: companion_id, query, optional memory_types CSV, limit.
+    Returns: JSON {"memories": [{"id": uuid, "text": str, "memory_type": conversation|reflection|diary|dream|musing|narrative|insight_synthesis, "importance": float, "score": float}]}
+    Side effects: none.
+    Use for: recalling past events or whether a topic was discussed.
     """
     from eidolon_agent_memory.tools.memory_read import tool_get_episodic
     user = await _resolve_user(api_key)
@@ -188,10 +206,14 @@ async def get_episodic(
 
 @mcp.tool()
 async def get_journal(api_key: str, companion_id: str) -> str:
-    """Retrieve the companion's evolving journal about the user.
+    """Retrieve the current companion journal for this user.
 
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"journal": str, "version": int, "top_insights": [{"content": str, "category": str}], "preferences": {str: str}}
+    Side effects: none.
     Use for: loading personal context at session start.
-    Do NOT use: on every message turn.
+    Do not use: every message turn.
     """
     from eidolon_agent_memory.tools.memory_read import tool_get_journal
     user = await _resolve_user(api_key)
@@ -223,11 +245,14 @@ async def store_fact(
     created_at: str = "",
     updated_at: str = "",
 ) -> str:
-    """Store a new structured fact (subject→predicate→object).
+    """Store a structured fact as subject, predicate, object, and fact_text.
 
-    emotional_salience: HIGH (grief/trauma/major events) | MED (milestones) | LOW (routine).
-    scope: user | shared (cross-companion visible) | companion (companion self-knowledge).
-    Do NOT use: for storing AI inferences mid-conversation; use extract_session_facts post-session.
+    Auth: requires api_key.
+    Inputs: companion_id plus fact fields and optional metadata.
+    Returns: JSON {"edge_id": uuid, "stored": true}
+    Side effects: writes memory nodes and edges.
+    Constraints: emotional_salience is HIGH|MED|LOW, scope is user|shared|companion.
+    Do not use: storing speculative AI inferences mid-conversation.
     """
     from eidolon_agent_memory.tools.memory_write import tool_store_fact
     user = await _resolve_user(api_key)
@@ -261,9 +286,12 @@ async def store_episodic(
     importance: float = 0.5,
     session_id: str = "",
 ) -> str:
-    """Store an episodic memory (conversation excerpt, reflection, etc.).
+    """Store one episodic memory entry.
 
-    memory_type: conversation | reflection | diary | dream | musing | narrative | insight_synthesis.
+    Auth: requires api_key.
+    Inputs: companion_id, text, memory_type, importance, optional session_id.
+    Returns: JSON {"memory_id": uuid, "stored": true}
+    Side effects: writes episodic memory row.
     """
     from eidolon_agent_memory.tools.memory_write import tool_store_episodic
     user = await _resolve_user(api_key)
@@ -287,9 +315,13 @@ async def update_fact_importance(
     importance: float,
     confidence: float = -1.0,
 ) -> str:
-    """Update importance (and optionally confidence) of a fact.
+    """Update a fact's importance and optional confidence.
 
-    Use when the user confirms, corrects, or elevates a fact's significance.
+    Auth: requires api_key.
+    Inputs: edge_id, importance, optional confidence.
+    Returns: JSON {"updated": bool (true if fact found and updated, false otherwise)}
+    Side effects: updates existing fact row.
+    Use for: explicit user correction or reprioritization.
     """
     from eidolon_agent_memory.tools.memory_write import tool_update_fact_importance
     user = await _resolve_user(api_key)
@@ -306,9 +338,13 @@ async def update_fact_importance(
 
 @mcp.tool()
 async def delete_fact(api_key: str, edge_id: str) -> str:
-    """Permanently delete a fact. Use only when user explicitly asks to forget.
+    """Permanently delete a fact edge.
 
-    For corrections, prefer superseding (store a new fact) instead.
+    Auth: requires api_key.
+    Inputs: edge_id.
+    Returns: JSON {"deleted": bool (true if fact found and deleted, false otherwise)}
+    Side effects: destructive write.
+    Use only when user explicitly asks to forget.
     """
     from eidolon_agent_memory.tools.memory_write import tool_delete_fact
     user = await _resolve_user(api_key)
@@ -327,10 +363,13 @@ async def set_preference(
     value: str,
     source: str = "explicit",
 ) -> str:
-    """Set a user preference (key→value).
+    """Set or update a user preference key and value.
 
-    companion_id: pass empty string for a global (cross-companion) preference.
-    source: explicit (user said it) | extracted (inferred).
+    Auth: requires api_key.
+    Inputs: companion_id, key, value, source.
+    Returns: JSON {"key": str, "value": str, "stored": true}
+    Side effects: writes preference row.
+    Notes: empty companion_id stores a global preference.
     """
     from eidolon_agent_memory.tools.memory_write import tool_set_preference
     user = await _resolve_user(api_key)
@@ -352,9 +391,14 @@ async def set_preference(
 
 @mcp.tool()
 async def generate_diary(api_key: str, companion_id: str) -> str:
-    """Generate a diary entry from the companion's perspective.
+    """Generate a diary memory from the companion perspective.
 
-    Use for: daily scheduled reflection. Do NOT use mid-conversation.
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"memory_id": uuid, "memory_type": "diary", "text": str (full diary entry)}
+    Side effects: writes episodic memory.
+    Use for: scheduled reflection, not mid-conversation.
+    Cost: LLM generation; run periodically.
     """
     from eidolon_agent_memory.tools.cognitive import tool_generate_diary
     user = await _resolve_user(api_key)
@@ -367,9 +411,14 @@ async def generate_diary(api_key: str, companion_id: str) -> str:
 
 @mcp.tool()
 async def generate_dream(api_key: str, companion_id: str) -> str:
-    """Generate a surreal dream narrative about the user.
+    """Generate a dream-style episodic narrative about the user.
 
-    Use for: morning check-in. Do NOT use more than once per day.
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"memory_id": uuid, "memory_type": "dream", "text": str (surreal narrative)}
+    Side effects: writes episodic memory.
+    Use for: occasional proactive content.
+    Cost: LLM generation; run as autonomous task.
     """
     from eidolon_agent_memory.tools.cognitive import tool_generate_dream
     user = await _resolve_user(api_key)
@@ -382,9 +431,14 @@ async def generate_dream(api_key: str, companion_id: str) -> str:
 
 @mcp.tool()
 async def generate_musing(api_key: str, companion_id: str) -> str:
-    """Generate a spontaneous thought or reflection from the companion.
+    """Generate a short spontaneous reflection.
 
-    Use for: proactive outreach during idle time. Do NOT use inside an active response.
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"memory_id": uuid, "memory_type": "musing", "text": str (short thought)}
+    Side effects: writes episodic memory.
+    Use for: idle-time outreach, not inside active response generation.
+    Cost: LLM generation; run asynchronously.
     """
     from eidolon_agent_memory.tools.cognitive import tool_generate_musing
     user = await _resolve_user(api_key)
@@ -397,9 +451,14 @@ async def generate_musing(api_key: str, companion_id: str) -> str:
 
 @mcp.tool()
 async def generate_insights(api_key: str, companion_id: str) -> str:
-    """Analyse facts and generate psychological/behavioural insights.
+    """Generate synthesized insights from stored facts.
 
-    Do NOT use with fewer than 10 stored facts — quality will be poor.
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"insights": [{"id": uuid, "content": str (psychological insight), "category": str, "confidence": float}], "count": int}
+    Side effects: writes user_insight rows.
+    Do not use with very sparse fact history.
+    Cost: LLM analysis; run periodically.
     """
     from eidolon_agent_memory.tools.cognitive import tool_generate_insights
     user = await _resolve_user(api_key)
@@ -412,9 +471,13 @@ async def generate_insights(api_key: str, companion_id: str) -> str:
 
 @mcp.tool()
 async def refresh_journal(api_key: str, companion_id: str) -> str:
-    """Rebuild the companion's evolving journal about the user.
+    """Rebuild the evolving companion journal for this user.
 
-    Expensive — do NOT run on every session. Weekly or on major fact changes.
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"journal_id": uuid, "version": int, "length": int (character count)}
+    Side effects: writes or updates journal.
+    Cost: expensive (LLM synthesis); run periodically or after major memory changes.
     """
     from eidolon_agent_memory.tools.cognitive import tool_refresh_journal
     user = await _resolve_user(api_key)
@@ -432,10 +495,14 @@ async def extract_session_facts(
     conversation_text: str,
     session_id: str = "",
 ) -> str:
-    """Extract and persist facts from a conversation segment using the LLM.
+    """Extract and persist structured facts from conversation text.
 
-    conversation_text: full conversation as 'User: ...\\nAssistant: ...' format.
-    Use for: post-session processing. Do NOT use on short (<3 turns) exchanges.
+    Auth: requires api_key.
+    Inputs: companion_id, conversation_text, optional session_id.
+    Returns: JSON with extraction counts (structure varies by service implementation).
+    Side effects: writes nodes, edges, and related memory rows.
+    Use for: post-session ingestion of meaningful exchanges.
+    Cost: LLM extraction and embeddings; run after sessions end.
     """
     from eidolon_agent_memory.tools.cognitive import tool_extract_session_facts
     user = await _resolve_user(api_key)
@@ -462,9 +529,12 @@ async def create_companion(
     pronouns: str = "",
     personality_traits: str = "",
 ) -> str:
-    """Create a new companion.
+    """Create a new companion profile for the authenticated user.
 
-    personality_traits: comma-separated list e.g. 'empathetic,playful,curious'.
+    Auth: requires api_key.
+    Inputs: name, optional persona, pronouns, personality_traits CSV.
+    Returns: JSON {"companion_id": uuid, "name": str, "created": true}
+    Side effects: writes companion row and initializes relationship state.
     """
     from eidolon_agent_memory.tools.companion import tool_create_companion
     user = await _resolve_user(api_key)
@@ -483,7 +553,13 @@ async def create_companion(
 
 @mcp.tool()
 async def get_companion(api_key: str, companion_id: str) -> str:
-    """Get companion configuration details."""
+    """Get companion configuration details.
+
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"companion_id": uuid, "name": str, "persona": str|null, "pronouns": str|null, "personality_traits": [str]|null, "llm_config": dict|null} or {"error": "companion_not_found"}
+    Side effects: none.
+    """
     from eidolon_agent_memory.tools.companion import tool_get_companion
     user = await _resolve_user(api_key)
     async with AsyncSessionLocal() as db:
@@ -495,7 +571,13 @@ async def get_companion(api_key: str, companion_id: str) -> str:
 
 @mcp.tool()
 async def list_companions(api_key: str) -> str:
-    """List all companions for the authenticated user."""
+    """List all companions for the authenticated user.
+
+    Auth: requires api_key.
+    Inputs: none beyond api_key.
+    Returns: JSON {"companions": [{"companion_id": uuid, "name": str, "pronouns": str|null}], "count": int}
+    Side effects: none.
+    """
     from eidolon_agent_memory.tools.companion import tool_list_companions
     user = await _resolve_user(api_key)
     async with AsyncSessionLocal() as db:
@@ -511,7 +593,13 @@ async def update_companion(
     pronouns: str = "",
     personality_traits: str = "",
 ) -> str:
-    """Update mutable companion fields. Only provided (non-empty) fields change."""
+    """Update mutable companion fields.
+
+    Auth: requires api_key.
+    Inputs: companion_id plus optional persona, pronouns, personality_traits CSV.
+    Returns: JSON {"companion_id": uuid, "updated": true} or {"error": "companion_not_found"}
+    Side effects: updates companion profile row.
+    """
     from eidolon_agent_memory.tools.companion import tool_update_companion
     user = await _resolve_user(api_key)
     traits = (
@@ -543,10 +631,12 @@ async def set_task_schedule(
     schedule: str,
     timezone: str = "UTC",
 ) -> str:
-    """Create or update a scheduled autonomous task.
+    """Create or update an autonomous scheduled task.
 
-    task_type: dream | diary | musing | insight | journal_refresh | decay | dedup | session_cleanup.
-    schedule: cron expression e.g. '0 7 * * *' (7am daily).
+    Auth: requires api_key.
+    Inputs: companion_id, task_type (dream|diary|musing|insight|journal_refresh), cron schedule, timezone.
+    Returns: JSON {"task_id": uuid, "task_type": str, "schedule": str (cron), "timezone": str, "enabled": true} or {"error": "Unknown task_type"}
+    Side effects: writes or updates scheduled task row.
     """
     from eidolon_agent_memory.tools.scheduler import tool_set_task_schedule
     user = await _resolve_user(api_key)
@@ -564,7 +654,13 @@ async def set_task_schedule(
 
 @mcp.tool()
 async def list_task_schedules(api_key: str, companion_id: str) -> str:
-    """List all scheduled tasks for a companion."""
+    """List all scheduled tasks for one companion.
+
+    Auth: requires api_key.
+    Inputs: companion_id.
+    Returns: JSON {"tasks": [{"task_id": uuid, "task_type": str, "schedule": str (cron), "timezone": str, "enabled": bool, "last_run_at": datetime|null}], "count": int}
+    Side effects: none.
+    """
     from eidolon_agent_memory.tools.scheduler import tool_list_task_schedules
     user = await _resolve_user(api_key)
     async with AsyncSessionLocal() as db:
@@ -576,7 +672,13 @@ async def list_task_schedules(api_key: str, companion_id: str) -> str:
 
 @mcp.tool()
 async def toggle_task(api_key: str, task_id: str, enabled: bool) -> str:
-    """Enable or disable a scheduled task without deleting it."""
+    """Enable or disable a scheduled task.
+
+    Auth: requires api_key.
+    Inputs: task_id, enabled flag.
+    Returns: JSON {"task_id": uuid, "enabled": bool} or {"error": "task_not_found"}
+    Side effects: updates scheduled task row.
+    """
     from eidolon_agent_memory.tools.scheduler import tool_toggle_task
     user = await _resolve_user(api_key)
     async with AsyncSessionLocal() as db:
@@ -588,10 +690,14 @@ async def toggle_task(api_key: str, task_id: str, enabled: bool) -> str:
 
 @mcp.tool()
 async def run_task_now(api_key: str, companion_id: str, task_type: str) -> str:
-    """Immediately execute a cognitive task (one-shot).
+    """Immediately execute a one-shot cognitive task.
 
-    task_type: dream | diary | musing | insight | journal_refresh.
-    Do NOT use for: decay | dedup | cleanup — those are schedule-only.
+    Auth: requires api_key.
+    Inputs: companion_id, task_type (diary|dream|musing|insight|journal_refresh).
+    Returns: JSON {"task_type": str, "memory_id": uuid, "text": str} or {"task_type": str, "count": int} or {"task_type": str, "journal_id": uuid, "version": int} or {"error": str}
+    Side effects: writes memories, insights, or journal updates depending on task.
+    Do not use for maintenance tasks like decay or dedup.
+    Cost: LLM generation per task type.
     """
     from eidolon_agent_memory.tools.scheduler import tool_run_task_now
     user = await _resolve_user(api_key)
@@ -611,7 +717,13 @@ async def run_task_now(api_key: str, companion_id: str, task_type: str) -> str:
 
 @mcp.tool()
 async def info(api_key: str) -> str:
-    """Return system info: version, fact counts, capabilities."""
+    """Return diagnostic system info for the authenticated user.
+
+    Auth: requires api_key.
+    Inputs: none beyond api_key.
+    Returns: JSON {"version": str, "user_id": uuid, "active_facts": int, "episodic_memories": int, "capabilities": [str]}
+    Side effects: none.
+    """
     from eidolon_agent_memory.tools.utility import tool_info
     user = await _resolve_user(api_key)
     async with AsyncSessionLocal() as db:
@@ -621,9 +733,13 @@ async def info(api_key: str) -> str:
 
 @mcp.tool()
 async def provision_user(email: str = "", timezone: str = "UTC") -> str:
-    """Create a new user and return their API key (shown once).
+    """Provision a new user and return a one-time raw API key.
 
-    No authentication required for this endpoint.
+    Auth: none.
+    Inputs: optional email and timezone.
+    Returns: JSON {"user_id": uuid, "api_key": str (shown once; store securely), "warning": "Store this API key securely. It will not be shown again."}
+    Side effects: writes user row and authentication material.
+    Note: API key is not retrievable after this call.
     """
     from eidolon_agent_memory.tools.utility import tool_provision_user
     async with AsyncSessionLocal() as db:
