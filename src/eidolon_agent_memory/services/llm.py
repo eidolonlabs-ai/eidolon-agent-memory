@@ -6,12 +6,62 @@ import logging
 import re
 from typing import Any
 
+import httpx
 from openai import AsyncOpenAI
+from openai import OpenAIError
 from openai.types.chat import ChatCompletionMessageParam
 
 from eidolon_agent_memory.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_balanced_json_object(text: str) -> str:
+    """Return the first balanced JSON object substring, or original text if none found."""
+    start = text.find("{")
+    if start == -1:
+        return text
+
+    depth = 0
+    in_string = False
+    escape = False
+    for idx in range(start, len(text)):
+        ch = text[idx]
+        if in_string:
+            if escape:
+                escape = False
+                continue
+            if ch == "\\":
+                escape = True
+                continue
+            if ch == '"':
+                in_string = False
+            continue
+
+        if ch == '"':
+            in_string = True
+            continue
+        if ch == "{":
+            depth += 1
+            continue
+        if ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : idx + 1]
+
+    return text
+
+
+def _strip_code_fences(text: str) -> str:
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if lines:
+            lines = lines[1:]
+        if lines and lines[-1].strip().startswith("```"):
+            lines = lines[:-1]
+        return "\n".join(lines).strip()
+    return text
 
 
 def _repair_json(text: str) -> str:
@@ -23,24 +73,27 @@ def _repair_json(text: str) -> str:
       - Text before the opening { or after the closing }
       - Markdown code fences (```json ... ```)
     """
-    # Strip markdown code fences
-    text = text.strip()
-    if text.startswith("```"):
-        text = text.split("\n", 1)[-1] if "\n" in text else text[3:]
-    if text.endswith("```"):
-        text = text.rsplit("```", 1)[0]
-    text = text.strip()
+    # Strip markdown code fences first.
+    text = _strip_code_fences(text)
 
-    # Extract substring from first { to last } (ignore leading/trailing prose)
-    start = text.find("{")
-    end = text.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        text = text[start : end + 1]
+    # Extract first balanced JSON object and ignore leading/trailing prose.
+    text = _extract_balanced_json_object(text)
 
     # Remove trailing commas before } or ] (common small-model mistake)
     text = re.sub(r",\s*([}\]])", r"\1", text)
 
+    # Remove non-printing control chars that occasionally break JSON parsing.
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
+
     return text
+
+
+def _message_text(msg: Any) -> str:
+    content = msg.content or ""
+    if content:
+        return content
+    raw = msg.model_dump() if hasattr(msg, "model_dump") else {}
+    return raw.get("reasoning_content") or ""
 
 
 class LLMClient:
@@ -103,23 +156,77 @@ class LLMClient:
             "content": "Always respond with valid JSON only. No markdown fences, no prose.",
         }
         full_messages = [system_msg, *messages]
-        text = await self.complete(
-            full_messages,
-            tier=tier,
-            model=model,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-        # Strip optional markdown code fences and repair common JSON issues
-        text = _repair_json(text)
+        used_model = model or self._resolve_model(tier)
+
+        async def _raw_json_call(extra_messages: list[ChatCompletionMessageParam] | None = None) -> str:
+            call_messages = [*full_messages, *(extra_messages or [])]
+            try:
+                resp = await self._client.chat.completions.create(
+                    model=used_model,
+                    messages=call_messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    response_format={"type": "json_object"},
+                )
+                return _message_text(resp.choices[0].message)
+            except (OpenAIError, httpx.HTTPError, TypeError, ValueError, RuntimeError):
+                return await self.complete(
+                    call_messages,
+                    tier=tier,
+                    model=used_model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+
+        def _parse_candidates(raw_text: str) -> Any:
+            candidates = [
+                raw_text.strip(),
+                _strip_code_fences(raw_text),
+                _extract_balanced_json_object(raw_text),
+                _repair_json(raw_text),
+            ]
+            seen: set[str] = set()
+            last_error: json.JSONDecodeError | None = None
+            for candidate in candidates:
+                if not candidate or candidate in seen:
+                    continue
+                seen.add(candidate)
+                try:
+                    return json.loads(candidate)
+                except json.JSONDecodeError as exc:
+                    last_error = exc
+                    continue
+            if last_error is not None:
+                raise last_error
+            raise json.JSONDecodeError("No JSON candidates to parse", raw_text, 0)
+
+        first_text = await _raw_json_call()
         try:
-            return json.loads(text)
+            return _parse_candidates(first_text)
+        except json.JSONDecodeError as exc_first:
+            logger.warning(
+                "Initial JSON parse failed (len=%d): %s — attempting corrective retry",
+                len(first_text),
+                exc_first,
+            )
+
+        corrective_msg: ChatCompletionMessageParam = {
+            "role": "system",
+            "content": (
+                "Your previous response was invalid JSON. Return the same answer as valid compact JSON only. "
+                "Do not include markdown fences, comments, or trailing commas."
+            ),
+        }
+        second_text = await _raw_json_call(extra_messages=[corrective_msg])
+        try:
+            return _parse_candidates(second_text)
         except json.JSONDecodeError as exc:
+            repaired = _repair_json(second_text)
             logger.error(
-                "JSON parse failed after repair (len=%d): %s — snippet: %r",
-                len(text),
+                "JSON parse failed after retry+repair (len=%d): %s — snippet: %r",
+                len(repaired),
                 exc,
-                text[max(0, exc.pos - 40) : exc.pos + 40] if hasattr(exc, "pos") else text[:120],
+                repaired[max(0, exc.pos - 40) : exc.pos + 40] if hasattr(exc, "pos") else repaired[:120],
             )
             raise
 

@@ -1,0 +1,12 @@
+{
+  "benchmark": "LOCOMO",
+  "mode": "official_dataset_scoring_mcp_memory",
+  "question_count": 5,
+  "mean_f1": 0.2634,
+  "model": "mcp-memory",
+  "answer_model": "openai/gpt-4.1-mini",
+  "mcp_url": "http://localhost:3100/mcp",
+  "extract_facts": true,
+  "out_file": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo/outputs/locomo10_qa.json",
+  "stats_file": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo/outputs/locomo10_qa_stats.json"
+}

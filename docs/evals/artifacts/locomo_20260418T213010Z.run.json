@@ -1,0 +1,8 @@
+{
+  "benchmark": "LOCOMO",
+  "status": "BLOCKED",
+  "timestamp": "20260418T213010Z",
+  "notes": "No run command provided.",
+  "repo_dir": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo",
+  "repo_status": "no repo_url provided"
+}

@@ -153,7 +153,7 @@ async def extract_facts(
 ) -> dict[str, int]:
     """
     Run LLM extraction on *conversation_text* and persist nodes+edges.
-    Returns {"nodes": N, "edges": N} created/updated counts.
+    Returns extraction counts plus the concrete extracted facts that were persisted.
     """
     prompt = EXTRACTION_PROMPT.replace("{conversation}", conversation_text)
     try:
@@ -163,7 +163,7 @@ async def extract_facts(
         )
     except Exception as exc:
         logger.error("LLM extraction failed: %s", exc)
-        return {"nodes": 0, "edges": 0}
+        return {"nodes": 0, "edges": 0, "facts": []}
 
     data: dict[str, Any] = dict(first_pass) if isinstance(first_pass, dict) else {"nodes": [], "edges": []}
     first_edges = data.get("edges", []) if isinstance(data.get("edges", []), list) else []
@@ -217,6 +217,7 @@ async def extract_facts(
             continue
 
     edges_count = 0
+    extracted_facts: list[dict[str, Any]] = []
     for e in edges_raw:
         try:
             # Validation: reject IS_A category nonsense
@@ -230,7 +231,7 @@ async def extract_facts(
             if src is None or tgt is None:
                 continue
 
-            await upsert_edge(
+            edge = await upsert_edge(
                 db,
                 user_id=user_id,
                 companion_id=companion_id,
@@ -250,8 +251,22 @@ async def extract_facts(
                 source_session_id=source_session_id,
             )
             edges_count += 1
+            extracted_facts.append(
+                {
+                    "fact_text": edge.fact_text,
+                    "predicate": edge.predicate,
+                    "category": edge.category or "",
+                    "importance": edge.importance,
+                    "confidence": edge.confidence,
+                    "scope": edge.scope,
+                    "emotional_salience": edge.emotional_salience,
+                    "emotional_context": edge.emotional_context,
+                    "created_at": edge.created_at.isoformat() if edge.created_at else None,
+                    "updated_at": edge.updated_at.isoformat() if edge.updated_at else None,
+                }
+            )
         except (KeyError, Exception):
             continue
 
     await db.commit()
-    return {"nodes": nodes_count, "edges": edges_count}
+    return {"nodes": nodes_count, "edges": edges_count, "facts": extracted_facts}

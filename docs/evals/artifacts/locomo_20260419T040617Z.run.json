@@ -1,0 +1,46 @@
+{
+  "benchmark": "LOCOMO",
+  "timestamp": "20260419T040617Z",
+  "repo_dir": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo",
+  "repo_status": "repo already present",
+  "run_command": "python3 - <<'PY'\nimport json\nimport os\nimport sys\nimport types\nimport urllib.request\nfrom pathlib import Path\nfrom types import SimpleNamespace\nimport numpy as np\n\nrepo = Path('.').resolve()\nsys.path.insert(0, str(repo))\n\nrag_utils = types.ModuleType('task_eval.rag_utils')\ndef _disabled_get_embeddings(*args, **kwargs):\n    raise NotImplementedError('RAG path is disabled for this LOCOMO wrapper')\nrag_utils.get_embeddings = _disabled_get_embeddings\nsys.modules['task_eval.rag_utils'] = rag_utils\n\nbert_score = types.ModuleType('bert_score')\ndef _unused_score(*args, **kwargs):\n    raise NotImplementedError('bert_score is not used in this LOCOMO run path')\nbert_score.score = _unused_score\nsys.modules['bert_score'] = bert_score\n\nimport global_methods\n\nbackend_base = \"http://127.0.0.1:1234/v1\"\nbackend_model = \"openai/gpt-oss-20b\"\nmodel_name = \"gpt-4-turbo-local\"\nout_file = Path(\"outputs/locomo10_qa.json\")\nlimit = 5\ndata_file = Path('data/locomo10.json')\n\ndef set_openai_key():\n    return None\n\ndef run_chatgpt(query, num_gen=1, num_tokens_request=1000, model='chatgpt', use_16k=False, temperature=1.0, wait_time=1):\n    payload = {\n        'model': backend_model,\n        'messages': [{'role': 'system' if model == 'chatgpt' else 'user', 'content': query}],\n        'n': num_gen,\n        'temperature': temperature,\n        'max_tokens': num_tokens_request,\n    }\n    request = urllib.request.Request(\n        backend_base.rstrip('/') + '/chat/completions',\n        data=json.dumps(payload).encode('utf-8'),\n        headers={'Content-Type': 'application/json'},\n        method='POST',\n    )\n    with urllib.request.urlopen(request, timeout=300) as response:\n        body = json.loads(response.read().decode('utf-8'))\n    return body['choices'][0]['message']['content']\n\nglobal_methods.set_openai_key = set_openai_key\nglobal_methods.run_chatgpt = run_chatgpt\n\nfrom task_eval.gpt_utils import get_gpt_answers\nfrom task_eval.evaluation import eval_question_answering\nfrom task_eval.evaluation_stats import analyze_aggr_acc\n\nsamples = json.loads(data_file.read_text(encoding='utf-8'))\nselected = []\nremaining = limit\nfor sample in samples:\n    if remaining <= 0:\n        break\n    qa = sample.get('qa', [])\n    if not qa:\n        continue\n    take = min(remaining, len(qa))\n    selected.append({**sample, 'qa': qa[:take]})\n    remaining -= take\n\nargs = SimpleNamespace(\n    out_file=str(out_file),\n    model=model_name,\n    data_file=str(data_file),\n    use_rag=False,\n    use_4bit=False,\n    batch_size=1,\n    rag_mode='',\n    emb_dir='',\n    top_k=5,\n    retriever='contriever',\n    overwrite=True,\n)\n\nprediction_key = f'{model_name}_prediction'\nmodel_key = model_name\nout_samples = {}\nfor data in selected:\n    out_data = {'sample_id': data['sample_id'], 'qa': [dict(item) for item in data['qa']]}\n    answers = get_gpt_answers(data, out_data, prediction_key, args)\n    exact_matches, lengths, recall = eval_question_answering(answers['qa'], prediction_key)\n    for idx in range(len(answers['qa'])):\n        answers['qa'][idx][model_key + '_f1'] = round(exact_matches[idx], 3)\n    out_samples[data['sample_id']] = answers\n\nout_file.parent.mkdir(parents=True, exist_ok=True)\nout_file.write_text(json.dumps(list(out_samples.values()), indent=2), encoding='utf-8')\nanalyze_aggr_acc(str(data_file), str(out_file), str(out_file).replace('.json', '_stats.json'), model_key, model_key + '_f1', rag=False)\nflat_scores = [qa[model_key + '_f1'] for sample in out_samples.values() for qa in sample['qa']]\nsummary = {\n    'benchmark': 'LOCOMO',\n    'mode': 'official_dataset_scoring_local_model',\n    'model': model_name,\n    'backend_model': backend_model,\n    'backend_base': backend_base,\n    'question_count': len(flat_scores),\n    'mean_f1': float(np.mean(flat_scores)) if flat_scores else 0.0,\n    'out_file': str(out_file),\n    'stats_file': str(out_file).replace('.json', '_stats.json'),\n}\nimport json\nPath(\"/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260419T040617Z.json\").write_text(json.dumps(summary, indent=2), encoding='utf-8')\nPY",
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"<stdin>\", line 25, in <module>\n  File \"/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo/global_methods.py\", line 8, in <module>\n    import google.generativeai as genai\nModuleNotFoundError: No module named 'google.generativeai'\n",
+  "setup": [
+    {
+      "command": "python -m pip install -U pip",
+      "returncode": 0,
+      "stdout": "Requirement already satisfied: pip in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (26.0.1)\n",
+      "stderr": ""
+    },
+    {
+      "command": "python -m pip install tiktoken regex nltk",
+      "returncode": 0,
+      "stdout": "Collecting tiktoken\n  Using cached tiktoken-0.12.0-cp313-cp313-macosx_11_0_arm64.whl.metadata (6.7 kB)\nRequirement already satisfied: regex in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (2026.4.4)\nRequirement already satisfied: nltk in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (3.9.1)\nCollecting requests>=2.26.0 (from tiktoken)\n  Using cached requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)\nRequirement already satisfied: click in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (from nltk) (8.3.2)\nRequirement already satisfied: joblib in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (from nltk) (1.5.3)\nRequirement already satisfied: tqdm in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (from nltk) (4.66.4)\nCollecting charset_normalizer<4,>=2 (from requests>=2.26.0->tiktoken)\n  Using cached charset_normalizer-3.4.7-cp313-cp313-macosx_10_13_universal2.whl.metadata (40 kB)\nRequirement already satisfied: idna<4,>=2.5 in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (from requests>=2.26.0->tiktoken) (3.11)\nCollecting urllib3<3,>=1.26 (from requests>=2.26.0->tiktoken)\n  Using cached urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)\nRequirement already satisfied: certifi>=2023.5.7 in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (from requests>=2.26.0->tiktoken) (2026.2.25)\nUsing cached tiktoken-0.12.0-cp313-cp313-macosx_11_0_arm64.whl (993 kB)\nUsing cached requests-2.33.1-py3-none-any.whl (64 kB)\nUsing cached charset_normalizer-3.4.7-cp313-cp313-macosx_10_13_universal2.whl (309 kB)\nUsing cached urllib3-2.6.3-py3-none-any.whl (131 kB)\nInstalling collected packages: urllib3, charset_normalizer, requests, tiktoken\n\nSuccessfully installed charset_normalizer-3.4.7 requests-2.33.1 tiktoken-0.12.0 urllib3-2.6.3\n",
+      "stderr": ""
+    },
+    {
+      "command": "mkdir -p datasets && curl -fsSL https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json -o datasets/locomo10.json",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "mkdir -p data && cp datasets/locomo10.json data/locomo10.json",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "mkdir -p outputs",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "artifact_path": "/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260419T040617Z.json",
+  "status": "FAIL",
+  "score_summary": "see artifact",
+  "notes": "No benchmark artifact found; see run metadata."
+}

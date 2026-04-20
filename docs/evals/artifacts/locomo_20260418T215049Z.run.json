@@ -1,0 +1,21 @@
+{
+  "benchmark": "LOCOMO",
+  "status": "BLOCKED",
+  "timestamp": "20260418T215049Z",
+  "repo_dir": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo",
+  "setup": [
+    {
+      "command": "python -m pip install -U pip",
+      "returncode": 0,
+      "stdout": "Requirement already satisfied: pip in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (26.0.1)\n",
+      "stderr": ""
+    },
+    {
+      "command": "python -m pip install -r requirements.txt",
+      "returncode": 1,
+      "stdout": "",
+      "stderr": "ERROR: Invalid requirement: '_libgcc_mutex=0.1=main': Expected package name at the start of dependency specifier\n    _libgcc_mutex=0.1=main\n    ^ (from line 4 of requirements.txt)\nHint: = is not a valid operator. Did you mean == ?\n"
+    }
+  ],
+  "notes": "Setup command failed."
+}

@@ -1,0 +1,46 @@
+{
+  "benchmark": "LOCOMO",
+  "timestamp": "20260418T214542Z",
+  "repo_dir": "/Users/markcastillo/git/eidolon-agent-memory/external/evals/locomo-eval",
+  "repo_status": "repo already present",
+  "run_command": "set -a && [ -f ../../../.env ] && . ../../../.env || true; set +a; if [ -n \"${OPENROUTER_API_KEY:-}\" ] && [ -z \"${OPENAI_API_KEY:-}\" ]; then export OPENAI_API_KEY=\"$OPENROUTER_API_KEY\"; fi; if [ -n \"${OPENROUTER_BASE_URL:-}\" ] && [ -z \"${OPENAI_BASE_URL:-}\" ]; then export OPENAI_BASE_URL=\"$OPENROUTER_BASE_URL\"; fi; if [ -n \"${OPENAI_API_BASE:-}\" ] && [ -z \"${OPENAI_BASE_URL:-}\" ]; then export OPENAI_BASE_URL=\"$OPENAI_API_BASE\"; fi; if [ -z \"${OPENAI_BASE_URL:-}\" ] && [ -n \"${OPENAI_API_KEY:-}\" ]; then export OPENAI_BASE_URL=https://api.openai.com/v1; fi; if [ -z \"${OPENAI_API_KEY:-}\" ]; then echo 'Missing OPENAI_API_KEY/OPENROUTER_API_KEY for LOCOMO run' >&2; exit 2; fi && ./setup_memory_core.sh && (./start_gateway.sh >/tmp/locomo_gateway.log 2>&1 &) && uv run python scripts/run_memory_core.py --input datasets/locomo10.json --limit 5 --gateway http://127.0.0.1:18789 --agent-model openai/gpt-4.1-mini --judge-model openai/gpt-4.1-mini --skip-ingest && latest=$(ls -td outputs/* 2>/dev/null | head -n1) && test -n \"$latest\" && cp \"$latest/summary.json\" /Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260418T214542Z.json",
+  "returncode": 2,
+  "stdout": "",
+  "stderr": "Missing OPENAI_API_KEY/OPENROUTER_API_KEY for LOCOMO run\n",
+  "setup": [
+    {
+      "command": "python -m pip install -U uv",
+      "returncode": 0,
+      "stdout": "Requirement already satisfied: uv in /Users/markcastillo/git/eidolon-agent-memory/.venv/lib/python3.13/site-packages (0.11.7)\n",
+      "stderr": ""
+    },
+    {
+      "command": "command -v openclaw >/dev/null || npm install -g openclaw@latest",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "test -f .env || cp .env.example .env",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "mkdir -p datasets && curl -fsSL https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json -o datasets/locomo10.json",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "uv sync",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "warning: `VIRTUAL_ENV=/Users/markcastillo/git/eidolon-agent-memory/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nResolved 31 packages in 4ms\nChecked 29 packages in 0.88ms\n"
+    }
+  ],
+  "artifact_path": "/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/locomo_20260418T214542Z.json",
+  "status": "FAIL",
+  "score_summary": "see artifact",
+  "notes": "No benchmark artifact found; see run metadata."
+}

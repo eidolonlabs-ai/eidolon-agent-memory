@@ -1,0 +1,11 @@
+{
+  "benchmark": "LOCOMO",
+  "mode": "official_dataset_scoring_local_model",
+  "model": "gpt-4-turbo",
+  "backend_model": "openai/gpt-oss-20b",
+  "backend_base": "http://127.0.0.1:1234/v1",
+  "question_count": 5,
+  "mean_f1": 0.0,
+  "out_file": "outputs/locomo10_qa.json",
+  "stats_file": "outputs/locomo10_qa_stats.json"
+}

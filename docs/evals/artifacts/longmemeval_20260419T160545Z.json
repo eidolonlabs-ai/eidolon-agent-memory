@@ -1,0 +1,10 @@
+{
+  "benchmark": "LongMemEval",
+  "mode": "official_evaluation_mcp_memory",
+  "judge_model": "gpt-4o-mini",
+  "total": 10,
+  "correct": 6,
+  "accuracy": 0.6,
+  "hypothesis_file": "/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_hypothesis.jsonl",
+  "result_file": "/Users/markcastillo/git/eidolon-agent-memory/docs/evals/artifacts/longmemeval_hypothesis.jsonl.eval-results-gpt-4o-mini"
+}

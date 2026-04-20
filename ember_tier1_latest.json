@@ -1,0 +1,171 @@
+{
+  "adapter": "eidolon-agent-memory",
+  "tiers_run": [
+    1
+  ],
+  "elapsed_seconds": 105.58,
+  "results": [
+    {
+      "tier": "Tier 1: Extraction Quality",
+      "passed": false,
+      "score": 0.5214285714285715,
+      "details": {
+        "flat_recall": 0.5517241379310345,
+        "weighted_recall": 0.5214285714285715,
+        "threshold": 0.8,
+        "conversations": 12,
+        "total_gold_facts": 58,
+        "total_matched": 32,
+        "salience_breakdown": {
+          "HIGH": {
+            "found": 13,
+            "total": 29
+          },
+          "MED": {
+            "found": 15,
+            "total": 24
+          },
+          "LOW": {
+            "found": 4,
+            "total": 5
+          }
+        }
+      },
+      "per_item": [
+        {
+          "conversation_id": "conv_loneliness",
+          "flat_recall": 0.8,
+          "weighted_recall": 0.7,
+          "matched": 4,
+          "total": 5,
+          "missing": [
+            "User feels socially isolated in Seattle and lacks close friendships"
+          ]
+        },
+        {
+          "conversation_id": "conv_pet_anchor",
+          "flat_recall": 0.25,
+          "weighted_recall": 0.2222222222222222,
+          "matched": 1,
+          "total": 4,
+          "missing": [
+            "Max is 3 years old",
+            "User got Max after their mother's death as a way to cope with grief",
+            "Max is an emotional source of stability and comfort for the user"
+          ]
+        },
+        {
+          "conversation_id": "conv_emotional",
+          "flat_recall": 0.6666666666666666,
+          "weighted_recall": 0.625,
+          "matched": 2,
+          "total": 3,
+          "missing": [
+            "User and mother cooked together on Sundays"
+          ]
+        },
+        {
+          "conversation_id": "conv_burnout",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.3333333333333333,
+          "matched": 2,
+          "total": 4,
+          "missing": [
+            "User feels disconnected from their own interests and sense of identity",
+            "User is experiencing burnout"
+          ]
+        },
+        {
+          "conversation_id": "conv_breakup",
+          "flat_recall": 0.25,
+          "weighted_recall": 0.3,
+          "matched": 1,
+          "total": 4,
+          "missing": [
+            "User feels a mix of relief and grief about the breakup",
+            "User and Maya lived together",
+            "User misses having a partner and feels lonely since the breakup"
+          ]
+        },
+        {
+          "conversation_id": "conv_anxiety",
+          "flat_recall": 0.75,
+          "weighted_recall": 0.7777777777777778,
+          "matched": 3,
+          "total": 4,
+          "missing": [
+            "User's panic attacks are triggered by accumulated stress"
+          ]
+        },
+        {
+          "conversation_id": "conv_companion_values",
+          "flat_recall": 1.0,
+          "weighted_recall": 1.0,
+          "matched": 4,
+          "total": 4,
+          "missing": []
+        },
+        {
+          "conversation_id": "conv_family_estrangement",
+          "flat_recall": 0.16666666666666666,
+          "weighted_recall": 0.1875,
+          "matched": 1,
+          "total": 6,
+          "missing": [
+            "User is estranged from their mother after coming out as gay",
+            "User identifies as gay",
+            "User describes the loss of their mother's relationship as a form of grief",
+            "User's father still keeps in minimal contact via text",
+            "User hopes their mother will eventually accept them"
+          ]
+        },
+        {
+          "conversation_id": "conv_career_layoff",
+          "flat_recall": 0.6666666666666666,
+          "weighted_recall": 0.6666666666666666,
+          "matched": 4,
+          "total": 6,
+          "missing": [
+            "User has approximately 3 months of savings after layoff",
+            "User's wife has been discussing having a second child"
+          ]
+        },
+        {
+          "conversation_id": "conv_spiritual_crisis",
+          "flat_recall": 0.6666666666666666,
+          "weighted_recall": 0.6,
+          "matched": 4,
+          "total": 6,
+          "missing": [
+            "User lost their Catholic faith after their sister's death",
+            "User is uncertain about their beliefs and in a state of spiritual questioning"
+          ]
+        },
+        {
+          "conversation_id": "conv_learning_struggle",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.5294117647058824,
+          "matched": 3,
+          "total": 6,
+          "missing": [
+            "User's parents did not believe ADHD was a real condition",
+            "User feels anger about receiving their diagnosis so late in life",
+            "User's ADHD diagnosis is reframing their self-perception and personal history"
+          ]
+        },
+        {
+          "conversation_id": "conv_toxic_friendship",
+          "flat_recall": 0.5,
+          "weighted_recall": 0.5,
+          "matched": 3,
+          "total": 6,
+          "missing": [
+            "Cassie has controlling and guilt-tripping behavior that is worsening",
+            "User has tried to address the issue with Cassie multiple times without change",
+            "Cassie expects frequent attendance at social events and reacts with guilt-tripping when declined"
+          ]
+        }
+      ]
+    }
+  ]
+}
