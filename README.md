@@ -42,6 +42,8 @@ REDIS_URL=redis://localhost:6379
 
 ## Architecture
 
+See the end-to-end system diagram: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
 ### Data Model
 - **MemoryNode**: Entities with embeddings, importance scores, confidence levels
 - **MemoryEdge**: Facts (subject→predicate→object) with emotional metadata:
