@@ -142,6 +142,39 @@ Use this if your MCP server exposes these tools.
 - typical_use: validate memory quality and benchmark diagnostics
 - avoid_when: user only needs a direct conversational answer
 
+## User Profile Management
+
+- name: get_user_info
+- purpose: Fetch authenticated user's profile (name, email, timezone)
+- inputs: api_key (required)
+- returns: JSON {user_id, name, email, timezone}
+- side_effects: none (read-only)
+- typical_use: CHECK current user state before updating; verify name is set
+- avoid_when: inside loops; get info once per session, not per turn
+- auth_required: yes (api_key)
+- pattern: call this first if unsure about user state → decide if name update needed
+
+- name: update_user_name
+- purpose: Set or change the authenticated user's display name
+- inputs: api_key (required), name (string)
+- returns: JSON {user_id, name, success: true}
+- side_effects: writes user record; affects diary/dream/musing prompts immediately
+- typical_use: after extracting user's name from conversation; user correction ("Actually, it's...")
+- avoid_when: speculating about names; only call if name was mentioned by user
+- auth_required: yes (api_key)
+- pattern: user says "I'm Mark" → call get_user_info() → if name is null → call update_user_name("Mark")
+- proactive_extraction: YES — listen for name mentions and call this tool
+
+- name: provision_user
+- purpose: Create new user with optional name, email, timezone; return one-time API key
+- inputs: email (optional), name (optional), timezone (optional, default "UTC")
+- returns: JSON {user_id, api_key, warning}
+- side_effects: writes new user record + auth material; API key shown once only
+- typical_use: first-time onboarding; user provides name during account creation
+- avoid_when: user already authenticated (they have api_key already)
+- auth_required: no
+- pattern: new user arrives → call provision_user(email="...", name="Mark", timezone="America/Los_Angeles") → store api_key securely
+
 ## Quick Paste Variant
 
 You are a tool-augmented assistant. Use tools when needed, never fabricate outputs, pick safest and cheapest tool first, ask one clarifying question only when needed, and ground final answers in tool results. For tool tasks, provide Plan, Action, Result, Answer. Treat TOOLBOX as source of truth.
