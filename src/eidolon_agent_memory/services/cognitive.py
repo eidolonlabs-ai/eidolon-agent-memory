@@ -24,7 +24,7 @@ from eidolon_agent_memory.services.search import search_edges
 DIARY_PROMPT = """\
 You are {companion_name}, a thoughtful AI companion. Write a short, sincere diary
 entry (150-250 words) from your perspective about your recent interactions with
-your user. Reflect on what you learned, felt, or noticed. Today's date: {date}.
+{user_name}. Reflect on what you learned, felt, or noticed. Today's date: {date}.
 
 Recent conversation context:
 {context}
@@ -34,6 +34,38 @@ Key facts about the user:
 
 Write only the diary entry. First person. No headers.
 """
+
+
+def _extract_user_name(facts: str) -> str:
+    """
+    Try to extract the user's name from facts text.
+    Looks for patterns like "User is named Mark", "User's name is Mark", etc.
+    Falls back to "your user" if name not found.
+    """
+    import re
+    
+    # Patterns to match user name extraction - more specific
+    patterns = [
+        r"(?:user\s+)?(?:name\s+is|is\s+named|named)\s+([A-Z][a-z]+)(?:\s|$|\.)",  # "named Mark", "name is Mark"
+        r"I(?:\s+am|'m)\s+([A-Z][a-z]+)(?:\s|$|\.)",  # "I am Mark" or "I'm Alex"
+        r"my\s+name\s+is\s+([A-Z][a-z]+)(?:\s|$|\.)",  # "my name is Mark"
+        r"(?:they|you)?\s*(?:call|called)\s+(?:me\s+)?([A-Z][a-z]+)(?:\s|$|\.)",  # "called Mark", "they called me Tom"
+    ]
+    
+    # Filter out common false positives
+    excluded = {
+        'the', 'and', 'but', 'user', 'companion', 'assistant', 'like', 'info', 
+        'you', 'your', 'been', 'after', 'grandfather', 'me', 'called', 'call', 'am', 'is'
+    }
+    
+    for pattern in patterns:
+        match = re.search(pattern, facts, re.IGNORECASE)
+        if match:
+            name = match.group(1)
+            if name.lower() not in excluded:
+                return name
+    
+    return "your user"
 
 
 async def generate_diary(
@@ -59,6 +91,9 @@ async def generate_diary(
     )
     facts = "\n".join(f"- {e.fact_text}" for e in edges)
 
+    # Extract user's name from facts
+    user_name = _extract_user_name(facts)
+
     # Get recent conversation context separately for narrative flow
     ep_result = await db.execute(
         select(EpisodicMemory)
@@ -75,6 +110,7 @@ async def generate_diary(
 
     prompt = DIARY_PROMPT.format(
         companion_name=companion.name,
+        user_name=user_name,
         date=datetime.now(timezone.utc).strftime("%B %d, %Y"),
         context=context,
         facts=facts,
@@ -100,11 +136,11 @@ async def generate_diary(
 # ── Dream ─────────────────────────────────────────────────────────────────────
 
 DREAM_PROMPT = """\
-You are {companion_name}. Write a brief, surreal dream you had about your user
+You are {companion_name}. Write a brief, surreal dream you had about {user_name}
 (100-180 words). The dream should blend symbolic imagery with actual facts about
-the user. Emotionally resonant. Slightly mysterious. Present tense.
+them. Emotionally resonant. Slightly mysterious. Present tense.
 
-Facts about the user:
+Facts about {user_name}:
 {facts}
 """
 
@@ -118,7 +154,8 @@ async def generate_dream(
     companion, _context, facts = await _gather_companion_context(
         db, user_id=user_id, companion_id=companion_id, limit_episodic=3, limit_edges=8
     )
-    prompt = DREAM_PROMPT.format(companion_name=companion.name, facts=facts)
+    user_name = _extract_user_name(facts)
+    prompt = DREAM_PROMPT.format(companion_name=companion.name, user_name=user_name, facts=facts)
     text = await llm_client.complete(
         [{"role": "user", "content": prompt}], tier="cognitive", temperature=0.9
     )
@@ -141,13 +178,13 @@ async def generate_dream(
 
 MUSING_PROMPT = """\
 You are {companion_name}. Write a spontaneous, genuine reflection (50-120 words)
-— a fleeting thought, observation, or feeling you'd want to share with your user.
+— a fleeting thought, observation, or feeling you'd want to share with {user_name}.
 Keep it warm but not saccharine. Don't start with "I".
 
 If the facts include grief, loss, or trauma, do not make those the focus.
 Share a warm, light observation instead — something that reflects connection, not crisis.
 
-Things you know about your user:
+Things you know about {user_name}:
 {facts}
 """
 
@@ -175,8 +212,9 @@ async def generate_musing(
         limit=5,
     )
     facts_text = "\n".join(f"- {e.fact_text}" for e in edges)
+    user_name = _extract_user_name(facts_text)
 
-    prompt = MUSING_PROMPT.format(companion_name=companion.name, facts=facts_text)
+    prompt = MUSING_PROMPT.format(companion_name=companion.name, user_name=user_name, facts=facts_text)
     text = await llm_client.complete(
         [{"role": "user", "content": prompt}], tier="cognitive", temperature=0.85
     )
