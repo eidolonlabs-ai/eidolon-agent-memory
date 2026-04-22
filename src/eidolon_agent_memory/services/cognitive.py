@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from eidolon_agent_memory.models.companion import Companion
 from eidolon_agent_memory.models.insight import CompanionJournal, UserInsight
 from eidolon_agent_memory.models.memory import EpisodicMemory, MemoryEdge
+from eidolon_agent_memory.models.user import User
 from eidolon_agent_memory.services.embedding import embedding_service
 from eidolon_agent_memory.services.llm import llm_client
 from eidolon_agent_memory.services.search import search_edges
@@ -36,38 +37,6 @@ Write only the diary entry. First person. No headers.
 """
 
 
-def _extract_user_name(facts: str) -> str:
-    """
-    Try to extract the user's name from facts text.
-    Looks for patterns like "User is named Mark", "User's name is Mark", etc.
-    Falls back to "your user" if name not found.
-    """
-    import re
-    
-    # Patterns to match user name extraction - more specific
-    patterns = [
-        r"(?:user\s+)?(?:name\s+is|is\s+named|named)\s+([A-Z][a-z]+)(?:\s|$|\.)",  # "named Mark", "name is Mark"
-        r"I(?:\s+am|'m)\s+([A-Z][a-z]+)(?:\s|$|\.)",  # "I am Mark" or "I'm Alex"
-        r"my\s+name\s+is\s+([A-Z][a-z]+)(?:\s|$|\.)",  # "my name is Mark"
-        r"(?:they|you)?\s*(?:call|called)\s+(?:me\s+)?([A-Z][a-z]+)(?:\s|$|\.)",  # "called Mark", "they called me Tom"
-    ]
-    
-    # Filter out common false positives
-    excluded = {
-        'the', 'and', 'but', 'user', 'companion', 'assistant', 'like', 'info', 
-        'you', 'your', 'been', 'after', 'grandfather', 'me', 'called', 'call', 'am', 'is'
-    }
-    
-    for pattern in patterns:
-        match = re.search(pattern, facts, re.IGNORECASE)
-        if match:
-            name = match.group(1)
-            if name.lower() not in excluded:
-                return name
-    
-    return "your user"
-
-
 async def generate_diary(
     db: AsyncSession,
     *,
@@ -78,6 +47,9 @@ async def generate_diary(
     companion = await db.get(Companion, companion_id)
     if companion is None:
         raise ValueError(f"Companion {companion_id} not found")
+
+    user = await db.get(User, user_id)
+    user_name = user.name if user and user.name else "your user"
 
     # Use search_edges with intent='factual' for balanced perspective without
     # overemphasizing high-salience crisis content in diary reflection.
@@ -90,9 +62,6 @@ async def generate_diary(
         limit=10,
     )
     facts = "\n".join(f"- {e.fact_text}" for e in edges)
-
-    # Extract user's name from facts
-    user_name = _extract_user_name(facts)
 
     # Get recent conversation context separately for narrative flow
     ep_result = await db.execute(
@@ -154,7 +123,9 @@ async def generate_dream(
     companion, _context, facts = await _gather_companion_context(
         db, user_id=user_id, companion_id=companion_id, limit_episodic=3, limit_edges=8
     )
-    user_name = _extract_user_name(facts)
+    user = await db.get(User, user_id)
+    user_name = user.name if user and user.name else "your user"
+    
     prompt = DREAM_PROMPT.format(companion_name=companion.name, user_name=user_name, facts=facts)
     text = await llm_client.complete(
         [{"role": "user", "content": prompt}], tier="cognitive", temperature=0.9
@@ -200,6 +171,9 @@ async def generate_musing(
     if companion is None:
         raise ValueError(f"Companion {companion_id} not found")
 
+    user = await db.get(User, user_id)
+    user_name = user.name if user and user.name else "your user"
+
     # Use search_edges with intent='casual' to apply salience-based filtering.
     # This ensures HIGH-salience grief/trauma facts are suppressed in casual contexts,
     # aligning with EMBER benchmark's graceful omission requirement.
@@ -212,7 +186,6 @@ async def generate_musing(
         limit=5,
     )
     facts_text = "\n".join(f"- {e.fact_text}" for e in edges)
-    user_name = _extract_user_name(facts_text)
 
     prompt = MUSING_PROMPT.format(companion_name=companion.name, user_name=user_name, facts=facts_text)
     text = await llm_client.complete(

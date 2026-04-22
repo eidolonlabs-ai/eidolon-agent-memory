@@ -58,6 +58,7 @@ async def tool_provision_user(
     db: AsyncSession,
     *,
     email: str | None = None,
+    name: str | None = None,
     timezone: str = "UTC",
 ) -> dict[str, Any]:
     """
@@ -70,6 +71,7 @@ async def tool_provision_user(
     user = User(
         api_key_hash=hashed_key,
         email=email,
+        name=name,
         timezone=timezone,
     )
     db.add(user)
@@ -79,4 +81,51 @@ async def tool_provision_user(
         "user_id": str(user.id),
         "api_key": raw_key,
         "warning": "Store this API key securely. It will not be shown again.",
+    }
+
+
+async def tool_update_user_name(
+    db: AsyncSession,
+    *,
+    user_id: uuid.UUID,
+    name: str,
+) -> dict[str, Any]:
+    """
+    Update a user's name in the database.
+
+    Use for: setting/updating the user's display name.
+    """
+    user = await db.get(User, user_id)
+    if user is None:
+        return {"error": f"User {user_id} not found"}
+    
+    user.name = name
+    await db.commit()
+    await db.refresh(user)
+    return {
+        "user_id": str(user.id),
+        "name": user.name,
+        "success": True,
+    }
+
+
+async def tool_get_user_info(
+    db: AsyncSession,
+    *,
+    user_id: uuid.UUID,
+) -> dict[str, Any]:
+    """
+    Get user information including name, email, and timezone.
+
+    Use for: checking current user state before updating.
+    """
+    user = await db.get(User, user_id)
+    if user is None:
+        return {"error": f"User {user_id} not found"}
+    
+    return {
+        "user_id": str(user.id),
+        "name": user.name,
+        "email": user.email,
+        "timezone": user.timezone,
     }

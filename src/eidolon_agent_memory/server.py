@@ -750,11 +750,11 @@ async def info(api_key: str) -> str:
 
 
 @mcp.tool()
-async def provision_user(email: str = "", timezone: str = "UTC") -> str:
+async def provision_user(email: str = "", name: str = "", timezone: str = "UTC") -> str:
     """Provision a new user and return a one-time raw API key.
 
     Auth: none.
-    Inputs: optional email and timezone.
+    Inputs: optional email, name, and timezone.
     Returns: JSON {"user_id": uuid, "api_key": str (shown once; store securely), "warning": "Store this API key securely. It will not be shown again."}
     Side effects: writes user row and authentication material.
     Note: API key is not retrievable after this call.
@@ -762,12 +762,46 @@ async def provision_user(email: str = "", timezone: str = "UTC") -> str:
     from eidolon_agent_memory.tools.utility import tool_provision_user
     async with AsyncSessionLocal() as db:
         result = await tool_provision_user(
-            db, email=email or None, timezone=timezone
+            db, email=email or None, name=name or None, timezone=timezone
         )
     try:
         _API_KEY_USER_CACHE[result["api_key"]] = uuid.UUID(result["user_id"])
     except (KeyError, TypeError, ValueError):
         pass
+    return json.dumps(result)
+
+
+@mcp.tool()
+async def update_user_name(api_key: str, name: str) -> str:
+    """Update the authenticated user's name.
+
+    Auth: requires api_key.
+    Inputs: name (string).
+    Returns: JSON {"user_id": uuid, "name": str, "success": true}
+    Side effects: updates user row.
+    Use for: setting or updating the user's display name.
+    """
+    from eidolon_agent_memory.tools.utility import tool_update_user_name
+    user = await _resolve_user(api_key)
+    async with AsyncSessionLocal() as db:
+        result = await tool_update_user_name(db, user_id=user.id, name=name)
+    return json.dumps(result)
+
+
+@mcp.tool()
+async def get_user_info(api_key: str) -> str:
+    """Get authenticated user's profile information.
+
+    Auth: requires api_key.
+    Inputs: none.
+    Returns: JSON {"user_id": uuid, "name": str|null, "email": str|null, "timezone": str}
+    Side effects: none (read-only).
+    Use for: checking current user state before updating name or other profile info.
+    """
+    from eidolon_agent_memory.tools.utility import tool_get_user_info
+    user = await _resolve_user(api_key)
+    async with AsyncSessionLocal() as db:
+        result = await tool_get_user_info(db, user_id=user.id)
     return json.dumps(result)
 
 

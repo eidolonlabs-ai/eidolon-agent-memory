@@ -36,6 +36,8 @@ from eidolon_agent_memory.tools.scheduler import (
 from eidolon_agent_memory.tools.utility import (
     tool_info,
     tool_provision_user,
+    tool_update_user_name,
+    tool_get_user_info,
 )
 
 __all__ = [
@@ -66,4 +68,6 @@ __all__ = [
     "tool_run_task_now",
     "tool_info",
     "tool_provision_user",
+    "tool_update_user_name",
+    "tool_get_user_info",
 ]

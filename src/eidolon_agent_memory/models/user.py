@@ -18,6 +18,7 @@ class User(Base):
     )
     api_key_hash: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="UTC")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
