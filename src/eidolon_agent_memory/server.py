@@ -77,6 +77,11 @@ async def search_memory(
 
     Auth: requires api_key.
     Inputs: companion_id, query, intent (factual|emotional|casual|recall), limit.
+    intent semantics:
+      casual   — suppress HIGH-salience grief/trauma facts; use when writing lighthearted or fun messages.
+      emotional — boost HIGH-salience facts; use when user is discussing difficult emotions.
+      recall   — emphasise recency; use when user asks what has happened lately.
+      factual  — balanced default; use for most informational lookups.
     Returns: JSON {"facts": [{"id": uuid, "fact_text": str, "predicate": str, "emotional_salience": HIGH|MED|LOW, "importance": float, "confidence": float, "scope": user|shared|companion, "score": float}], "count": int}
     Side effects: none.
     Use for: recalling facts to include in a response.
@@ -106,7 +111,14 @@ async def get_context(
     """Build a structured context block from facts and episodic memory.
 
     Auth: requires api_key.
-    Inputs: companion_id, query, intent.
+    Inputs: companion_id, query, intent (factual|emotional|casual|recall).
+    intent semantics:
+      casual   — suppress HIGH-salience grief/trauma facts and crisis-laden diary/dream entries.
+                 Use when composing lighthearted, fun, or casual messages to the user.
+      emotional — surface and highlight HIGH-salience facts; use when the user is processing
+                  difficult emotions or explicitly discussing sensitive topics.
+      recall   — emphasise recency; use for "what's been happening lately" queries.
+      factual  — balanced default for most response generation.
     Returns: JSON {"context": str (formatted text), "fact_count": int}
     Side effects: none.
     Use for: preparing context before generating a response.
@@ -179,12 +191,17 @@ async def get_episodic(
     companion_id: str,
     query: str,
     memory_types: str = "",
+    intent: str = "factual",
     limit: int = 5,
 ) -> str:
     """Search episodic memories using semantic retrieval.
 
     Auth: requires api_key.
-    Inputs: companion_id, query, optional memory_types CSV, limit.
+    Inputs: companion_id, query, optional memory_types CSV, intent (factual|emotional|casual|recall), limit.
+    intent semantics:
+      casual   — suppress diary/dream entries unlikely to be relevant; use for casual/fun queries.
+      emotional — surface all content including crisis memories; use when processing difficult emotions.
+      factual  — balanced default.
     Returns: JSON {"memories": [{"id": uuid, "text": str, "memory_type": conversation|reflection|diary|dream|musing|narrative|insight_synthesis, "importance": float, "score": float}]}
     Side effects: none.
     Use for: recalling past events or whether a topic was discussed.
@@ -199,6 +216,7 @@ async def get_episodic(
             companion_id=_uid(companion_id),
             query=query,
             memory_types=types,
+            intent=intent,
             limit=limit,
         )
     return json.dumps(result)

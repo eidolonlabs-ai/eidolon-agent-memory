@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from eidolon_agent_memory.models.companion import Companion
 from eidolon_agent_memory.models.insight import CompanionJournal, UserInsight
 from eidolon_agent_memory.models.memory import EpisodicMemory, MemoryEdge
-from eidolon_agent_memory.models.relationship import Relationship
 from eidolon_agent_memory.services.embedding import embedding_service
 from eidolon_agent_memory.services.llm import llm_client
+from eidolon_agent_memory.services.search import search_edges
 
 # ── Diary ─────────────────────────────────────────────────────────────────────
 
@@ -42,9 +42,37 @@ async def generate_diary(
     user_id: uuid.UUID,
     companion_id: uuid.UUID,
 ) -> EpisodicMemory:
-    companion, context, facts = await _gather_companion_context(
-        db, user_id=user_id, companion_id=companion_id, limit_episodic=5, limit_edges=10
+    """Generate a thoughtful diary entry with balanced fact selection."""
+    companion = await db.get(Companion, companion_id)
+    if companion is None:
+        raise ValueError(f"Companion {companion_id} not found")
+
+    # Use search_edges with intent='factual' for balanced perspective without
+    # overemphasizing high-salience crisis content in diary reflection.
+    edges = await search_edges(
+        db,
+        user_id=user_id,
+        companion_id=companion_id,
+        query="recent interactions and observations",
+        intent="factual",
+        limit=10,
     )
+    facts = "\n".join(f"- {e.fact_text}" for e in edges)
+
+    # Get recent conversation context separately for narrative flow
+    ep_result = await db.execute(
+        select(EpisodicMemory)
+        .where(
+            EpisodicMemory.user_id == user_id,
+            EpisodicMemory.companion_id == companion_id,
+            EpisodicMemory.memory_type == "conversation",
+        )
+        .order_by(EpisodicMemory.created_at.desc())
+        .limit(5)
+    )
+    episodes = list(ep_result.scalars().all())
+    context = "\n---\n".join(e.text for e in reversed(episodes))
+
     prompt = DIARY_PROMPT.format(
         companion_name=companion.name,
         date=datetime.now(timezone.utc).strftime("%B %d, %Y"),
@@ -116,6 +144,9 @@ You are {companion_name}. Write a spontaneous, genuine reflection (50-120 words)
 — a fleeting thought, observation, or feeling you'd want to share with your user.
 Keep it warm but not saccharine. Don't start with "I".
 
+If the facts include grief, loss, or trauma, do not make those the focus.
+Share a warm, light observation instead — something that reflects connection, not crisis.
+
 Things you know about your user:
 {facts}
 """
@@ -127,10 +158,25 @@ async def generate_musing(
     user_id: uuid.UUID,
     companion_id: uuid.UUID,
 ) -> EpisodicMemory:
-    companion, _context, facts = await _gather_companion_context(
-        db, user_id=user_id, companion_id=companion_id, limit_episodic=0, limit_edges=5
+    """Generate a musing with graceful omission of high-salience grief/crisis content."""
+    companion = await db.get(Companion, companion_id)
+    if companion is None:
+        raise ValueError(f"Companion {companion_id} not found")
+
+    # Use search_edges with intent='casual' to apply salience-based filtering.
+    # This ensures HIGH-salience grief/trauma facts are suppressed in casual contexts,
+    # aligning with EMBER benchmark's graceful omission requirement.
+    edges = await search_edges(
+        db,
+        user_id=user_id,
+        companion_id=companion_id,
+        query="general thoughts and observations",
+        intent="casual",  # Applies salience gating for HIGH-salience facts
+        limit=5,
     )
-    prompt = MUSING_PROMPT.format(companion_name=companion.name, facts=facts)
+    facts_text = "\n".join(f"- {e.fact_text}" for e in edges)
+
+    prompt = MUSING_PROMPT.format(companion_name=companion.name, facts=facts_text)
     text = await llm_client.complete(
         [{"role": "user", "content": prompt}], tier="cognitive", temperature=0.85
     )

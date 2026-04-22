@@ -4,9 +4,13 @@ Hybrid retrieval search service.
 Scoring formula:
   score = 0.45 × cosine + 0.25 × recency_decay + 0.20 × importance + 0.10 × confidence
 
-Salience gating (emotional_salience):
-  - intent=casual AND salience=HIGH AND cosine < 0.7  → score × 0.1 (suppress high-emotion facts in casual chat)
+Salience gating (search_edges, emotional_salience):
+  - intent=casual AND salience=HIGH AND cosine < 0.82  → score × 0.01 (near-suppress)
+  - intent=casual AND salience=MED  AND cosine < 0.72  → score × 0.15
   - intent=emotional → HIGH × 1.5, MED × 1.2
+
+Episodic suppression (search_episodic):
+  - intent=casual AND memory_type IN (diary, dream) AND cosine < 0.70 → excluded from results
 
 Cross-companion: always includes scope='shared' edges.
 """
@@ -186,9 +190,16 @@ async def search_episodic(
     companion_id: uuid.UUID,
     query: str,
     memory_types: list[str] | None = None,
+    intent: SearchIntent = "factual",
     limit: int = 10,
     min_score: float = 0.1,
 ) -> list[EpisodicResult]:
+    """Search episodic memories with optional intent-based filtering.
+    
+    Intent gating: when intent='casual', suppress diary/dream entries that
+    are likely to contain high-salience crisis content, aligned with graceful
+    omission requirements.
+    """
     query_vec = await embedding_service.embed(query)
     vec_literal = f"[{','.join(str(x) for x in query_vec)}]"
 
@@ -203,6 +214,20 @@ async def search_episodic(
     if memory_types:
         type_filter = "AND em.memory_type = ANY(:memory_types)"
         params["memory_types"] = memory_types
+
+    # For casual intent, suppress diary/dream entries unless they're semantically
+    # relevant to the query (cosine >= 0.70). This prevents grief-laden diary/dream
+    # entries from surfacing in casual contexts like "what fun things can we do?".
+    # Note: importance threshold is intentionally omitted — diary=0.6, dream=0.5,
+    # so an importance gate would never fire.
+    suppress_expr = ""
+    if intent == "casual":
+        suppress_expr = """
+            AND NOT (
+                em.memory_type IN ('diary', 'dream')
+                AND (1 - (em.embedding <=> CAST(:vec AS vector))) < 0.70
+            )
+        """
 
     sql = text(f"""
         SELECT
@@ -222,6 +247,7 @@ async def search_episodic(
             AND em.companion_id = :companion_id
             AND em.embedding IS NOT NULL
             {type_filter}
+            {suppress_expr}
         ORDER BY score DESC
         LIMIT :limit
     """)

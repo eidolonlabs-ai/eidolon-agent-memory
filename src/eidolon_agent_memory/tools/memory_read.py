@@ -94,6 +94,7 @@ async def tool_get_context(
         user_id=user_id,
         companion_id=companion_id,
         query=query,
+        intent=intent,  # type: ignore[arg-type]
         limit=5,
     )
 
@@ -205,6 +206,7 @@ async def tool_get_episodic(
     companion_id: uuid.UUID,
     query: str,
     memory_types: list[str] | None = None,
+    intent: str = "factual",
     limit: int = 5,
 ) -> dict[str, Any]:
     """
@@ -212,6 +214,7 @@ async def tool_get_episodic(
 
     Use for: recalling past events, checking if a topic was discussed before.
     Do NOT use: for fact retrieval (use search_memory or lookup_fact).
+    intent: factual | emotional | casual | recall
     """
     results = await search_episodic(
         db,
@@ -219,6 +222,7 @@ async def tool_get_episodic(
         companion_id=companion_id,
         query=query,
         memory_types=memory_types,
+        intent=intent,  # type: ignore[arg-type]
         limit=limit,
     )
     return {

@@ -105,19 +105,26 @@ Use this if your MCP server exposes these tools.
 
 - name: memory_search
 - purpose: Retrieve relevant memory facts for a natural-language query
-- inputs: query, limit, optional filters
+- inputs: query, limit, intent (factual|emotional|casual|recall), optional filters
 - returns: ranked memory hits with relevance
 - side_effects: none
 - typical_use: answer personalization, context recall, follow-up continuity
 - avoid_when: question is fully answerable from current turn with high confidence
+- intent_guidance: use intent=casual when writing lighthearted or fun messages (suppresses
+  grief/trauma facts); use intent=emotional when the user is discussing difficult feelings
+  (surfaces and highlights high-salience facts); use intent=recall for recency-focused queries;
+  default to intent=factual for most informational lookups
 
 - name: memory_get_context
 - purpose: Fetch broad memory context for current user or session
-- inputs: companion_id, session_id, optional window
-- returns: contextual memory bundle
+- inputs: companion_id, query, intent (factual|emotional|casual|recall)
+- returns: contextual memory bundle with facts and recent episodic memories
 - side_effects: none
-- typical_use: before composing a high-stakes or sensitive response
-- avoid_when: low-latency trivial replies
+- typical_use: before composing any personalised response
+- avoid_when: low-latency trivial replies where no personalisation is needed
+- intent_guidance: ALWAYS pass intent=casual when composing casual, fun, or lighthearted
+  messages — this prevents grief and trauma memories from appearing in upbeat outreach;
+  pass intent=emotional when the user is processing something hard
 
 - name: memory_store_fact
 - purpose: Save a single explicit fact into memory graph
