@@ -24,31 +24,58 @@ async def decay_edges(
     companion_id: uuid.UUID,
     decay_rate: float = 0.02,
     floor: float = 0.05,
+    batch_size: int = 500,
 ) -> int:
     """
     Reduce importance of edges not retrieved recently.
     importance = max(floor, importance * (1 - decay_rate))
     Skips HIGH emotional salience edges.
-    Returns count of rows updated.
+    Processes in batches to avoid long-running transactions on large datasets.
+    Returns total count of rows updated.
     """
-    result = await db.execute(
-        update(MemoryEdge)
-        .where(
-            MemoryEdge.user_id == user_id,
-            MemoryEdge.companion_id == companion_id,
-            MemoryEdge.superseded_by.is_(None),
-            MemoryEdge.emotional_salience != "HIGH",
+    total_decayed = 0
+    while True:
+        subq = text("""
+            SELECT id FROM memory_edges
+            WHERE user_id = :user_id
+              AND (companion_id IS NOT DISTINCT FROM :companion_id::uuid)
+              AND superseded_by IS NULL
+              AND emotional_salience != 'HIGH'
+            LIMIT :batch_size
+        """)
+        sub_result = await db.execute(
+            subq,
+            {
+                "user_id": str(user_id),
+                "companion_id": str(companion_id),
+                "batch_size": batch_size,
+            },
         )
-        .values(
-            importance=text(
-                f"GREATEST({floor}, importance * {1 - decay_rate})"
+        batch_ids = [row.id for row in sub_result.fetchall()]
+        if not batch_ids:
+            break
+
+        result = await db.execute(
+            update(MemoryEdge)
+            .where(
+                MemoryEdge.id.in_(batch_ids),
+                MemoryEdge.user_id == user_id,
             )
+            .values(
+                importance=text(
+                    f"GREATEST({floor}, importance * {1 - decay_rate})"
+                )
+            )
+            .returning(MemoryEdge.id)
         )
-        .returning(MemoryEdge.id)
-    )
-    rows = result.fetchall()
-    await db.commit()
-    return len(rows)
+        rows = result.fetchall()
+        total_decayed += len(rows)
+        await db.commit()
+
+        if len(batch_ids) < batch_size:
+            break
+
+    return total_decayed
 
 
 # ── Dedup ─────────────────────────────────────────────────────────────────────
@@ -60,11 +87,13 @@ async def dedup_edges(
     user_id: uuid.UUID,
     companion_id: uuid.UUID,
     similarity_threshold: float = 0.85,
+    max_pairs: int = 200,
 ) -> int:
     """
     Find near-duplicate fact_text pairs using pg_trgm similarity.
     For each duplicate pair keep the one with higher confidence; supersede the other.
     Returns number of edges superseded.
+    Capped at max_pairs to prevent O(n²) blowup on large datasets.
     """
     sql = text("""
         SELECT a.id AS a_id, b.id AS b_id,
@@ -78,6 +107,8 @@ async def dedup_edges(
           AND a.superseded_by IS NULL
           AND b.superseded_by IS NULL
           AND similarity(a.fact_text, b.fact_text) > :threshold
+        ORDER BY similarity(a.fact_text, b.fact_text) DESC
+        LIMIT :max_pairs
     """)
     result = await db.execute(
         sql,
@@ -85,6 +116,7 @@ async def dedup_edges(
             "user_id": str(user_id),
             "companion_id": str(companion_id),
             "threshold": similarity_threshold,
+            "max_pairs": max_pairs,
         },
     )
     pairs = result.fetchall()

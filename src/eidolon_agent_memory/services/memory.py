@@ -194,6 +194,7 @@ async def list_edges_for_node(
     user_id: uuid.UUID,
     *,
     include_superseded: bool = False,
+    limit: int = 50,
 ) -> list[MemoryEdge]:
     stmt = select(MemoryEdge).where(
         MemoryEdge.user_id == user_id,
@@ -202,6 +203,7 @@ async def list_edges_for_node(
     )
     if not include_superseded:
         stmt = stmt.where(MemoryEdge.superseded_by.is_(None))
+    stmt = stmt.limit(limit)
     result = await db.execute(stmt)
     return list(result.scalars().all())
 

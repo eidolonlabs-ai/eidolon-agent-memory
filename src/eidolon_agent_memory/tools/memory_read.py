@@ -87,7 +87,7 @@ async def tool_get_context(
         companion_id=companion_id,
         query=query,
         intent=intent,  # type: ignore[arg-type]
-        limit=15,
+        limit=10,
     )
     episodic = await search_episodic(
         db,
@@ -95,7 +95,7 @@ async def tool_get_context(
         companion_id=companion_id,
         query=query,
         intent=intent,  # type: ignore[arg-type]
-        limit=5,
+        limit=3,
     )
 
     high_salience = [e for e in edges if e.emotional_salience == "HIGH"]
@@ -103,12 +103,12 @@ async def tool_get_context(
 
     sections: list[str] = []
     if regular:
-        facts_block = "\n".join(f"• {e.fact_text}" for e in regular[:8])
+        facts_block = "\n".join(f"• {e.fact_text}" for e in regular[:5])
         sections.append(f"Facts:\n{facts_block}")
     if high_salience:
         em_block = "\n".join(
             f"• [{e.emotional_context or 'emotional'}] {e.fact_text}"
-            for e in high_salience
+            for e in high_salience[:1]
         )
         sections.append(f"Emotional Context (HIGH salience):\n{em_block}")
     if episodic:
